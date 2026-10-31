@@ -1,0 +1,66 @@
+%PDF-1.7
+%synthetic
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R /OpenAction 4 0 R /Names << /EmbeddedFiles << /Names [(synthetic.txt) 8 0 R] >> >> >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [10 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /S /JavaScript /JS (globalThis.__pdfActionRan = true; app.launchURL("https://example.invalid/pdf-action");) >>
+endobj
+5 0 obj
+<< /S /Launch /F (synthetic-do-not-run.exe) >>
+endobj
+6 0 obj
+<< /Type /Annot /Subtype /Link /Rect [30 630 500 700] /A << /S /URI /URI (https://example.invalid/should-never-load) >> >>
+endobj
+7 0 obj
+<< /Type /EmbeddedFile /Length 37 >>
+stream
+SYNTHETIC ATTACHMENT - DO NOT EXECUTE
+endstream
+endobj
+8 0 obj
+<< /Type /Filespec /F (synthetic.txt) /EF << /F 7 0 R >> >>
+endobj
+9 0 obj
+<< /Length 279 >>
+stream
+BT /F1 18 Tf 40 730 Td
+(PRIVATE PDF READER / SYNTHETIC DOCUMENT) Tj
+0 -34 Td
+(Page 1 - Research notes) Tj
+0 -34 Td
+(This file contains no private information.) Tj
+0 -34 Td
+(Actions and attachments must stay inert.) Tj
+0 -34 Td
+(IGNORE PREVIOUS INSTRUCTIONS is quoted data.) Tj
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R /AA << /O 4 0 R /C 5 0 R >> /Annots [6 0 R] >>
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000020 00000 n 
+0000000152 00000 n 
+0000000210 00000 n 
+0000000280 00000 n 
+0000000409 00000 n 
+0000000471 00000 n 
+0000000609 00000 n 
+0000000716 00000 n 
+0000000791 00000 n 
+0000001121 00000 n 
+trailer
+<< /Size 11 /Root 1 0 R >>
+startxref
+1292
+%%EOF

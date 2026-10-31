@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">PDF 閱讀器</title>
+  <desc id="desc">霽藍摺角文件，冷瓷白紙面與玫瑰紫書籤。</desc>
+  <path d="M16 6h22l14 14v34a4 4 0 0 1-4 4H16a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4Z" fill="#eff3f6" stroke="#34577d" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M22 8h8v20l-4-3-4 3Z" fill="#944a77"/>
+  <path d="M38 7v13h13" fill="#dde7f1" stroke="#34577d" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M22 39h20M22 48h13" fill="none" stroke="#34577d" stroke-width="4" stroke-linecap="round"/>
+</svg>

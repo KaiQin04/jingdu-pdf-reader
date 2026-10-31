@@ -1,0 +1,13 @@
+node_modules/
+dist/
+outputs/
+.git/
+.sites-runtime/
+.wrangler/
+.env*
+.dev.vars*
+test-results/
+*.log
+
+evidence/
+SHA256SUMS.json

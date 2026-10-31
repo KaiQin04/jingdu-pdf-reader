@@ -1,0 +1,18 @@
+import { build } from 'esbuild';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { gzipSync } from 'node:zlib';
+const at=p=>new URL('../'+p,import.meta.url);
+const manifest=JSON.parse(await readFile(at('.openai/hosting.json'),'utf8'));
+if(!manifest.capabilities?.includes('mcp')||manifest.static||manifest.d1||manifest.r2||manifest.plugins||manifest.connectors)throw new Error('Expected MCP-only Worker manifest without storage or integrations');
+await mkdir(at('evidence'),{recursive:true});
+await mkdir(at('dist/server'),{recursive:true});await mkdir(at('dist/.openai'),{recursive:true});
+const result=await build({entryPoints:[at('worker/index.js').pathname],bundle:true,write:false,format:'esm',platform:'browser',conditions:['workerd'],target:'es2022',minify:true,legalComments:'inline',loader:{'.html':'text','.txt':'text'},metafile:true});
+const source=result.outputFiles[0].contents;
+await writeFile(at('dist/server/index.js'),source);
+await writeFile(at('dist/.openai/hosting.json'),JSON.stringify(manifest,null,2)+'\n');
+const imports=Object.values(result.metafile.outputs).flatMap(output=>output.imports);
+if(imports.length)throw new Error('Worker must be self-contained');
+const report={version:'0.2.0',format:'Sites Worker ESM default.fetch',bytes:source.length,gzipBytes:gzipSync(source).length,sha256:createHash('sha256').update(source).digest('hex'),externalImports:imports,projectRegistered:!!manifest.project_id};
+await writeFile(at('evidence/worker-build.json'),JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report));

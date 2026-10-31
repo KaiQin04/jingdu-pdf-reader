@@ -1,0 +1,31 @@
+{
+  "name": "jingdu-public-reader",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build:reader": "node scripts/build.mjs",
+    "build:worker": "node scripts/build-worker.mjs",
+    "build": "npm run build:reader && npm run build:worker",
+    "test": "node --test tests/*.test.mjs",
+    "validate": "node scripts/validate-worker.mjs",
+    "check:package": "node scripts/verify-package.mjs",
+    "dev": "node scripts/preview.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
+    "@modelcontextprotocol/ext-apps": "2.0.4",
+    "@modelcontextprotocol/node": "2.1.2",
+    "@modelcontextprotocol/server": "2.4.0",
+    "pdfjs-dist": "6.4.299",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "1.1.0",
+    "@playwright/test": "1.64.1",
+    "esbuild": "0.28.2"
+  }
+}

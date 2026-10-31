@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--CSP-->
+<link rel="icon" type="image/png" href="<!--ICON-URI-->">
+<title>靜讀 · PDF 閱讀器</title>
+<style>/*STYLE*/</style>
+</head>
+<body>
+<main>
+  <nav class="toolbar" aria-label="閱讀控制">
+    <label class="button primary" for="file" title="開啟 PDF；只在瀏覽器處理，500 MiB／5,000 頁以內；大檔需足夠裝置記憶體">開啟<input id="file" type="file" accept="application/pdf,.pdf"></label>
+    <span id="filename">尚未選擇文件</span>
+    <button id="back" disabled aria-label="返回上一個閱讀位置">↶</button>
+    <button id="prev" disabled aria-label="上一頁">←</button>
+    <label class="page-label"><span class="sr-only">頁</span><input id="page-number" type="number" min="1" value="1" disabled aria-label="頁碼"></label><span id="page-count">／0</span>
+    <button id="next" disabled aria-label="下一頁">→</button>
+    <button id="zoom-out" disabled aria-label="縮小">−</button><output id="zoom">100%</output><button id="zoom-in" disabled aria-label="放大">＋</button>
+    <button id="fit" disabled>適寬</button>
+    <button id="tools-toggle" aria-expanded="false" aria-controls="tools-panel">工具</button>
+    <div class="display-controls"><button id="fullscreen" hidden>展開</button><button id="inline" hidden>返回</button></div>
+    <button id="close" disabled aria-label="關閉 PDF 並清除">×</button>
+  </nav>
+  <div id="status" role="status" aria-live="polite">正在載入閱讀器…</div>
+  <div class="workspace">
+    <aside id="tools-panel" aria-label="閱讀工具" hidden>
+      <div class="drawer-heading"><h2>閱讀工具</h2><button id="tools-close" aria-label="收起閱讀工具">×</button></div>
+      <div class="tool-tabs" role="tablist" aria-label="閱讀工具"><button id="tab-nav" role="tab" aria-selected="false">導航</button><button id="tab-search" role="tab" aria-selected="true">搜尋</button><button id="tab-notes" role="tab" aria-selected="false">註記</button><button id="tab-view" role="tab" aria-selected="false">閱讀</button></div>
+      <section id="panel-nav" hidden><h2>目錄</h2><div id="outline">開啟文件後可讀取目錄。</div><h2>縮圖</h2><div class="searchrow"><button id="thumb-prev">前 8 頁</button><button id="thumb-next">後 8 頁</button></div><div id="thumbnails"></div></section>
+      <section id="panel-search"><div id="search-form" role="search"><label for="query">全文搜尋</label><div class="searchrow"><input id="query" type="search" maxlength="200" placeholder="輸入關鍵字" disabled><button id="search" type="button" disabled>搜尋</button></div></div>
+      <div class="searchrow"><button id="search-cancel" hidden>暫停搜尋</button><button id="search-next" hidden>繼續搜尋</button></div>
+      <div class="search-options"><label><input id="case-sensitive" type="checkbox">區分大小寫</label><label>模式 <select id="search-mode"><option value="literal">字串</option><option value="tokens">中文／詞語（全部符合）</option><option value="regex">正則（隔離限時）</option></select></label></div>
+      <p id="search-summary" class="muted">搜尋有文字層的 PDF；掃描檔尚不支援 OCR。</p>
+      <ol id="results" aria-label="搜尋結果"></ol>
+      <section class="quote-box"><h2>帶著頁碼引用</h2><p>在頁面選取文字，再按下方按鈕。</p><button id="cite" disabled>建立頁碼引用</button><label for="citation">引用預覽</label><textarea id="citation" rows="5" readonly placeholder="此處顯示所選文字與實際 PDF 頁碼"></textarea><button id="copy" disabled>選取引用文字</button><p class="muted">使用 Ctrl / ⌘ + C 複製，再自行貼入聊天。這裡不會自動傳送。</p></section>
+      </section>
+      <section id="panel-notes" hidden><h2>本機註記</h2><p class="muted">只保留在目前視窗。關閉前請匯出；不會自動同步或改寫 PDF。</p><label>顏色 <select id="note-color"><option value="yellow">黃色</option><option value="green">綠色</option><option value="blue">藍色</option><option value="pink">粉色</option><option value="purple">紫色</option></select></label><div class="searchrow"><button id="note-highlight">標示選取文字</button><button id="note-underline">底線</button></div><label for="note-comment">留言（可搭配選取文字）</label><textarea id="note-comment" maxlength="4000" rows="3"></textarea><button id="note-save">新增留言</button><label>圈畫／截圖 <select id="draw-mode"><option value="select">選取文字</option><option value="ink">手寫（支援壓感時記錄）</option><option value="region">區域截圖</option></select></label><p class="muted">手寫與截圖模式：在頁面按住拖曳。</p><label>清單顏色 <select id="note-filter"><option value="">全部</option><option>yellow</option><option>green</option><option>blue</option><option>pink</option><option>purple</option></select></label><ol id="note-list"></ol><div class="searchrow"><button id="export-json">JSON 匯出預覽</button><button id="export-md">Markdown 匯出預覽</button></div><label class="button" for="note-import">匯入此書註記 JSON<input id="note-import" type="file" accept="application/json,.json"></label><label for="export-preview">匯出內容（可自行複製）</label><textarea id="export-preview" rows="7" readonly></textarea><img id="region-preview" alt="本機產生的區域截圖" hidden><button id="host-download" disabled>交由 ChatGPT 下載</button><p id="export-notice" class="muted">一般閱讀只在瀏覽器。只有按下「交由 ChatGPT 下載」時，所選註記或截圖（可能包含原檔名、文件指紋、引文與時間）才交給 ChatGPT 宿主；不傳原始 PDF。宿主不支援時，請複製文字或另存預覽圖。</p></section>
+      <section id="panel-view" hidden><h2>服務與隱私</h2><p class="muted">公開試用版。請先用不敏感文件測試。原始 PDF 在目前瀏覽器視窗解析，不送至本服務。網站與 MCP 存取可能產生託管平台請求紀錄與安全 Cookie。註記僅在記憶體，關閉即清除。嵌入宿主時，只有主動按「交由 ChatGPT 下載」才傳送預覽註記／截圖；其中可能包含文件內容。獨立網站不支援此宿主下載，可自行複製文字或另存截圖預覽。無 OCR、雲端同步或 PDF 改寫。</p><h2>閱讀配置</h2><label>布局 <select id="view-mode"><option value="single">單頁</option><option value="double">雙頁</option><option value="continuous" selected>連續捲動（預設）</option><option value="split">雙窗比較</option></select></label><label>比較頁（Enter 套用） <input id="split-page" type="number" min="1" value="1"></label><label>顯示裁邊 <select id="crop"><option value="0">不裁邊</option><option value="0.03">3%</option><option value="0.05">5%</option><option value="0.1">10%</option></select></label><p class="muted">只改變顯示，不改寫 PDF。連續模式只保留可見頁與少量鄰頁；依各頁實際尺寸排列；未讀頁先估計，讀到後校正並保留閱讀位置。</p><h2>快捷鍵</h2><p class="muted">j／k 或左右鍵：翻頁；g：第一頁；G：最後頁；b：返回；/：搜尋；Esc：收起工具。輸入欄內不攔截按鍵。</p></section>
+    </aside>
+    <section id="viewport" tabindex="0" aria-label="PDF 頁面">
+      <div id="empty"><div class="paper-icon">PDF</div><h2>開啟 PDF 即可閱讀</h2><p>文件只在瀏覽器處理 · 500 MiB／5,000 頁以內；大檔需足夠裝置記憶體</p></div>
+      <div id="pages"><div class="sheet-frame" id="primary-frame"><div id="page" class="page-surface" hidden><canvas id="canvas" aria-label="PDF 頁面影像"></canvas><div id="text-layer" class="textLayer"></div><div class="link-layer"></div><svg class="annotation-layer" aria-label="本機註記"></svg></div></div></div>
+    </section>
+  </div>
+<div id="discard-dialog" role="alertdialog" aria-modal="true" aria-label="未匯出的本機註記" hidden><p>目前有本機註記。請先匯出，或明確捨棄後繼續。</p><button id="discard-export">查看匯出</button><button id="discard-confirm">捨棄並繼續</button><button id="discard-cancel">取消</button></div>
+  <span id="host-status" class="sr-only">靜讀 PDF 閱讀器</span>
+</main>
+<script>/*BOOTSTRAP*/</script>
+<script type="module">/*SCRIPT*/</script>
+</body>
+</html>

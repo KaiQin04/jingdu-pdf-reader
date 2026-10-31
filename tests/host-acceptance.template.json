@@ -1,0 +1,19 @@
+{
+  "sourceVersion": "0.2.0",
+  "deploymentVersion": null,
+  "globalSidebarButton": "not_tested",
+  "threadPanel": "not_tested",
+  "uiResourceLoad": "not_tested",
+  "navigationZoomSearchSelectionCitation": "not_tested",
+  "corruptOversizePageLimit": "not_tested",
+  "activeContentInert": "not_tested",
+  "documentNetworkEgressAbsent": "not_tested",
+  "sandboxCspWorker": "not_tested",
+  "closeReopenCleanup": "not_tested",
+  "timeoutCleanup": "not_tested",
+  "responsiveDisplayModes": "not_tested",
+  "evidence": [],
+  "publicWebsiteReachable": "not_tested",
+  "publicMcpEndToEnd": "not_tested",
+  "invalidMcpArgumentsRejected": "not_tested"
+}

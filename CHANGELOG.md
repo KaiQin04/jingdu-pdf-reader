@@ -1,5 +1,11 @@
 # 更新紀錄
 
+## 2026-10-31 — 自訂網域支援
+
+- 新增選用設定 `PDF_READER_PUBLIC_ORIGIN`，讓自訂網域與原有 MCP 入口並存；保留 plugin 識別、圖標、CSP 與存取範圍。
+- 新增 2 項回歸，驗證兩個設定網址可使用相同介面與 MCP、未核准網址被拒絕及錯誤設定不會放行。完整 98 項測試、build 與 Worker validate 通過。
+- 原網址仍保留；自訂網域不會移除已公開的歷史連結。DNS 與 TLS 啟用狀態須另行驗證。
+
 ## 2026-10-31 — 掃描影像空白修正
 
 - 離線封裝漏打包 PDF.js 6 JavaScript 影像解碼器，原動態 URL 載入失敗後會留下可讀文字層與白頁。改為靜態打包鎖定套件內的 CCITT／JBIG2、OpenJPEG fallback；維持 `useWasm=false`、原有 CSP 及網路限制。

@@ -15,9 +15,9 @@ const plain=v=>v!==null && typeof v==='object' && !Array.isArray(v);
 const owns=(v,key)=>Object.hasOwn(v,key);
 const reply=(status,message)=>new Response(message,{status,headers:{...COMMON_HEADERS,'Content-Type':'text/plain; charset=utf-8'}});
 const rpc=(id,result)=>new Response(JSON.stringify({jsonrpc:'2.0',id,result}),{headers:{...COMMON_HEADERS,'Content-Type':'application/json','Access-Control-Allow-Origin':'*'}});
-function siteOrigin(env){
+function siteOrigin(env,key='PDF_READER_SITE_ORIGIN'){
   try {
-    const value=env?.PDF_READER_SITE_ORIGIN;
+    const value=env?.[key];
     if(typeof value!=='string')return null;
     const url=new URL(value);
     return url.protocol==='https:' && !url.username && !url.password && !url.port && value===url.origin ? value : null;
@@ -68,9 +68,10 @@ export function createCloudWorker({html,csp,documents={}}){
   let active=0;
   return {async fetch(request,env){
     // Anonymous fixed-content service: never read identity, cookies or authorization.
-    const expected=siteOrigin(env);if(!expected)return reply(503,'Site origin is not configured');
+    const expected=siteOrigin(env),publicOrigin=siteOrigin(env,'PDF_READER_PUBLIC_ORIGIN');
+    if(!expected||(env?.PDF_READER_PUBLIC_ORIGIN!==undefined&&!publicOrigin))return reply(503,'Site origin is not configured');
     const url=new URL(request.url);
-    if(url.origin!==expected)return reply(403,'Invalid host');
+    if(url.origin!==expected&&url.origin!==publicOrigin)return reply(403,'Invalid host');
     if(url.search||!['/','/reader','/mcp',...Object.keys(documents)].includes(url.pathname))return reply(404,'Not found');
     if(Object.hasOwn(documents,url.pathname)){
       if(!['GET','HEAD'].includes(request.method))return reply(405,'Method not allowed');

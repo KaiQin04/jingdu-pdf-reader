@@ -27,6 +27,25 @@ test('anonymous UI and MCP ignore credentials and identity headers',async()=>{
  assert.equal((await worker.fetch(new Request('https://other.invalid/mcp'),env)).status,403);
  assert.equal((await worker.fetch(req('/',{headers:{'Sec-Fetch-Site':'cross-site'}}),env)).status,200);
 });
+test('configured public alias serves the same reader and MCP without allowing other hosts',async()=>{
+ const alias='https://reader.synthetic.example',configured={...env,PDF_READER_PUBLIC_ORIGIN:alias};
+ const instance=createCloudWorker({html:'<!doctype html><html lang="en">synthetic reader</html>',csp:"default-src 'none'"});
+ for(const origin of [ORIGIN,alias]){
+  assert.equal((await instance.fetch(new Request(origin+'/reader'),configured)).status,200);
+  const request=rpc('tools/list');
+  const response=await instance.fetch(new Request(origin+'/mcp',{method:'POST',headers:request.headers,body:await request.text()}),configured);
+  assert.equal(response.status,200);assert.equal((await response.json()).result.tools[0].name,'open_pdf_reader');
+ }
+ for(const origin of ['https://other.invalid','https://reader.synthetic.example.evil.invalid'])assert.equal((await instance.fetch(new Request(origin+'/reader'),configured)).status,403);
+ assert.equal((await instance.fetch(new Request(alias+'/reader'),env)).status,403);
+});
+test('invalid public alias configuration fails closed while an omitted alias remains valid',async()=>{
+ const instance=createCloudWorker({html:'synthetic reader',csp:"default-src 'none'"});
+ for(const alias of [null,'',false,'http://reader.synthetic.example','https://reader.synthetic.example/','https://user@reader.synthetic.example','https://reader.synthetic.example:444','https://reader.synthetic.example/path','https://reader.synthetic.example?x=1','https://reader.synthetic.example#fragment']){
+  assert.equal((await instance.fetch(req('/reader'),{...env,PDF_READER_PUBLIC_ORIGIN:alias})).status,503);
+ }
+ assert.equal((await instance.fetch(req('/reader'),env)).status,200);
+});
 test('anonymous browser MCP preflight exposes no credentials',async()=>{
  const r=await worker.fetch(req('/mcp',{method:'OPTIONS',headers:{Origin:'https://any.example'}}),env);
  assert.equal(r.status,204);assert.equal(r.headers.get('Access-Control-Allow-Origin'),'*');assert.equal(r.headers.get('Access-Control-Allow-Credentials'),null);

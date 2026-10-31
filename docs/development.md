@@ -40,6 +40,8 @@ npm run dev
 
 正式 Worker 需要非秘密環境設定 `PDF_READER_SITE_ORIGIN`，值為服務自己的完整 HTTPS origin。僅提供 `/`、`/reader`、`/privacy`、`/help`、`/licenses` 及 POST `/mcp`；不設檔案儲存或使用者資料庫。預覽 adapter 的 origin 是開發設定，部署其他網域時須與實際服務設定一致。
 
+使用自訂網域時，`PDF_READER_SITE_ORIGIN` 保留原平台的 HTTPS origin，以維持既有 MCP 接入；選用設定 `PDF_READER_PUBLIC_ORIGIN` 可再指定一個完整 HTTPS origin。程式只接受這兩個明確設定的網址：未設定第二個網址時維持原行為，設定格式錯誤時拒絕服務。這是程式內的網址白名單，不放寬 CSP；自訂網域仍須完成 Sites 的 DNS 與 TLS 驗證。
+
 閱讀器以 sandbox、雜湊腳本、blob Worker 及 `connect-src 'none'` 限制網路活動。PDF 與註記在記憶體處理；宿主下載僅在使用者點擊後傳送預覽中的衍生資料。託管平台仍可能保存一般存取紀錄及安全 Cookie。
 
 `useWasm: false` 保持不變。PDF.js 6 的 CCITT／JBIG2 與 JPEG 2000 JavaScript fallback 由 `scripts/pdf-worker.mjs` 靜態打包，避免原本的動態 URL 載入在離線環境失敗後只留下文字層與白頁。建置會檢查上游載入程式形狀，變動時直接失敗，要求重新核對；未加入 `unsafe-eval` 或 `wasm-unsafe-eval`。CCITT 合成掃描已經像素回歸與瀏覽器驗證；其他編碼不因此視為完整相容性驗收。
@@ -62,4 +64,3 @@ MCP 具有 32 KiB 請求上限、巢狀深度 16、10 秒處理時限及每個 i
 - Zod：MIT。
 
 MCP 已打包的 `content-type` 程式碼另附完整 MIT 授權。各檔案、版本、建置路徑與字型散布注意事項見[第三方授權對照](third-party-licenses.md)。自有程式的授權不取代第三方條款；本次檢查不構成完整法律審查。
-

@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import { createI18n } from '../src/i18n.mjs';
+import { canSharePdfText } from '../src/chat-context.mjs';
 const source=readFileSync(new URL('../src/reader.mjs',import.meta.url),'utf8');
 // Execute the actual named function source with bounded DOM doubles, not a copy
 // of its logic. Browser layout/host integration remain separate UI tests.
 function fn(name,next,globals={}){
- const start=source.indexOf(`function ${name}(`),end=source.indexOf(next,start);
+ const found=source.indexOf(`function ${name}(`),start=source.slice(found-6,found)==='async '?found-6:found,end=source.indexOf(next,start);
  assert.ok(start>=0&&end>start,`source boundary for ${name}`);
  return vm.runInNewContext(`(${source.slice(start,end).trim()})`,{i18n:createI18n('zh-Hant'),...globals});
 }
@@ -63,4 +64,32 @@ test('untrusted imported note text is assigned as text, not executable HTML',()=
  const $=nodes();const payload='<img src=x onerror=alert(1)>';const state={views:new Map(),exportData:null,notes:{list:()=>[{id:'x',page:1,type:'comment',color:'yellow',text:payload}]}};
  const created=[];const document={createElement(){const n=node();Object.defineProperty(n,'innerHTML',{set(){throw new Error('HTML injection sink')}});created.push(n);return n}};
  const refresh=fn('refreshNotes','function addNote',{state,$,document,updateExportButton(){},paintNotes(){}});refresh();assert.ok(created.some(n=>n.textContent===payload));
+});
+
+test('discarding a text preview aborts extraction and removes the old file content',()=>{
+ const $=nodes();let aborted=0;const state={chatSequence:4,chatAbort:{abort(){aborted++}},chatPreview:{text:'synthetic old file'},chatSending:true,chatSent:true};$('chat-preview').value='synthetic old file';
+ const reset=fn('resetChatPreview','function updateChatControls',{state,$,updateChatControls(){}});reset();
+ assert.equal(aborted,1);assert.equal(state.chatSequence,5);assert.equal(state.chatPreview,null);assert.equal(state.chatAbort,null);assert.equal(state.chatSending,false);assert.equal($('chat-preview').value,'');
+});
+
+test('standalone text preview remains copyable while host sending is disabled',()=>{
+ const $=nodes(),state={pdf:{},chatPreview:{text:'synthetic'},chatAbort:null,chatSending:false};
+ const controls=fn('updateChatControls','async function prepareChatPreview',{state,$,app:null,canSharePdfText});controls();
+ assert.equal($('chat-send').disabled,true);assert.equal($('chat-copy').disabled,false);assert.equal($('chat-host-hint').hidden,false);
+});
+
+test('double clicking send cannot duplicate a message and a late result cannot mark a new preview sent',async()=>{
+ const $=nodes(),state={chatSequence:1,chatPreview:{text:'synthetic first'},chatSending:false};let sends=0,release;
+ const send=fn('sendChatPreview',"\n$('chat-toggle')",{state,$,app:{},canSharePdfText:()=>true,updateChatControls(){},sendPdfText(){sends++;return new Promise(r=>{release=r})}});
+ const first=send();await send();assert.equal(sends,1);
+ state.chatSequence++;state.chatSending=false;state.chatSent=false;const next={text:'synthetic next'};state.chatPreview=next;
+ release();await first;assert.equal(state.chatPreview,next);assert.equal(state.chatSent,false);assert.equal(state.chatSending,false);
+});
+
+test('unchanged PDF selection events do not cancel a preview while controls update',()=>{
+ let resets=0,selected='Synthetic passage';const state={selection:'',selectionPage:0,selectionTruncated:false,views:new Map([[1,{number:1,text:{contains:()=>true},surface:{getBoundingClientRect:()=>({x:0,y:0,width:100,height:100})}}]])};
+ const selection={isCollapsed:false,rangeCount:1,toString:()=>selected,getRangeAt:()=>({getClientRects:()=>[]})};
+ const capture=fn('captureSelection',"document.addEventListener('selectionchange'",{state,window:{getSelection:()=>selection},LIMITS:{quoteChars:4000},resetChatPreview(){resets++}});
+ capture();assert.equal(resets,1);capture();assert.equal(resets,1);
+ selected='Another passage';capture();assert.equal(resets,2);assert.equal(state.selection,'Another passage');
 });

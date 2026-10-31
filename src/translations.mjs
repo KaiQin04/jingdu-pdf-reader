@@ -1,5 +1,35 @@
 /** Owned interface copy only; never used to translate document content. */
 export const MESSAGES = Object.freeze({
+  chatTab: { en: 'ChatGPT', 'zh-Hant': 'ChatGPT' },
+  chatHeading: { en: 'Share PDF text', 'zh-Hant': '分享 PDF 文字' },
+  chatInstructions: { en: 'Choose what to share, preview it, then send or copy it.', 'zh-Hant': '選擇範圍，檢查預覽，再傳送或複製。' },
+  chatScope: { en: 'Scope', 'zh-Hant': '分享範圍' },
+  chatSelection: { en: 'Selected text', 'zh-Hant': '選取的文字' },
+  chatPage: { en: 'Current PDF page', 'zh-Hant': '目前 PDF 頁面' },
+  chatDocument: { en: 'Whole document text', 'zh-Hant': '整份文件文字' },
+  chatPrepare: { en: 'Prepare preview', 'zh-Hant': '產生預覽' },
+  chatCancel: { en: 'Cancel', 'zh-Hant': '取消' },
+  chatPreview: { en: 'Text to share (read-only)', 'zh-Hant': '將傳送的文字（唯讀）' },
+  chatSend: { en: 'Send to ChatGPT', 'zh-Hant': '傳給 ChatGPT' },
+  chatCopy: { en: 'Select preview text', 'zh-Hant': '選取預覽文字' },
+  chatDisclosure: { en: 'Sending shares everything in this preview with ChatGPT under its policies. The original PDF, images, diagrams and local notes are not attached. Reading and preparing a preview do not send content.', 'zh-Hant': '按下傳送後，預覽中的全部內容會交給 ChatGPT，依其政策處理。不會附上原始 PDF、圖片、圖表或本機註記。閱讀與產生預覽時不會傳送內容。' },
+  chatUnavailable: { en: "Sending isn't available here. Copy the preview and paste it into your chat.", 'zh-Hant': '此環境不支援傳送文字。請複製預覽，自行貼進對話。' },
+  chatLimits: { en: 'Text only; no OCR or images. Previews are limited to 200 pages and about 100,000 characters, and ChatGPT may accept less. Share larger documents a page or passage at a time.', 'zh-Hant': '只擷取文字，不含 OCR 或圖片。預覽上限為 200 頁、約 100,000 字元，ChatGPT 實際接受的上限可能更低。較大的文件請分次傳送目前頁或選取的文字。' },
+  chatIdle: { en: 'Prepare a new preview to share text.', 'zh-Hant': '請先產生要分享的文字預覽。' },
+  chatPreparing: { en: 'Extracting PDF page {page} of {pages}…', 'zh-Hant': '正在擷取第 {page}／{pages} 個 PDF 頁面…' },
+  chatReady: { en: 'Preview ready: {pages} PDF page(s), {chars} characters; {empty} page(s) have no extractable text. This preview has not been sent.', 'zh-Hant': '預覽已就緒：{pages} 個 PDF 頁面、{chars} 字元，其中 {empty} 頁沒有可擷取文字。本次預覽尚未傳送。' },
+  chatNoSelection: { en: 'Select text on a PDF page first, or choose the current page.', 'zh-Hant': '請先在 PDF 頁面選取文字，或改用目前頁面。' },
+  chatSelectionLong: { en: 'The selection exceeds 4,000 characters. Select less text or use the current page.', 'zh-Hant': '選取的文字超過 4,000 字元，請縮短範圍或改用目前頁面。' },
+  chatNoText: { en: "No extractable text in this scope. Image-only scanned pages can't be shared as text.", 'zh-Hant': '此範圍沒有可擷取的文字。純影像掃描頁無法以文字分享。' },
+  chatTooLarge: { en: 'The content exceeds the sharing limit. Nothing was sent. Try the current page or a shorter passage.', 'zh-Hant': '內容超過分享上限，未傳送任何內容。請改用目前頁或較短的文字。' },
+  chatTimeout: { en: 'Text extraction took too long. Nothing was sent. Try a smaller scope.', 'zh-Hant': '擷取文字超時，未傳送任何內容。請縮小範圍後再試。' },
+  chatCancelled: { en: 'Preparation cancelled. Nothing was sent.', 'zh-Hant': '已取消產生預覽，未傳送任何內容。' },
+  chatPrepareFailed: { en: 'Could not prepare this text. Nothing was sent. Try a smaller scope.', 'zh-Hant': '無法擷取這個範圍的文字，未傳送任何內容。請縮小範圍後再試。' },
+  chatSending: { en: 'Sending the preview to the conversation…', 'zh-Hant': '正在將預覽傳送到對話…' },
+  chatAccepted: { en: 'The host accepted the text. Continue in the conversation.', 'zh-Hant': 'ChatGPT 已接受文字，請回到對話繼續提問。' },
+  chatRejected: { en: 'The host rejected this message. Try a smaller scope or copy the preview.', 'zh-Hant': 'ChatGPT 拒絕了這則訊息。請縮小範圍，或自行複製預覽。' },
+  chatUnconfirmed: { en: 'Delivery could not be confirmed; the text may already have been sent. Check the conversation before trying again. You can still copy the preview.', 'zh-Hant': '無法確認是否已送出，文字可能已傳送。重試前請先查看對話；你仍可複製預覽。' },
+  chatCopyHint: { en: 'Press Ctrl / ⌘ + C, then paste into your chat.', 'zh-Hant': '按 Ctrl / ⌘ + C 複製，再自行貼入對話。' },
   "ui.app.title": {
     "en": "Jingdu · PDF Reader",
     "zh-Hant": "靜讀 · PDF 閱讀器"
@@ -241,8 +271,8 @@ export const MESSAGES = Object.freeze({
     "zh-Hant": "隱私說明"
   },
   "ui.privacy.body": {
-    "en": "Your PDF is parsed in your browser and is not uploaded to this service. Notes aren't saved automatically, so remember to export. In supported hosts, previewed notes or captures go to the host only when you press \"Download via ChatGPT\", and may include the file name or quotes. The hosting platform may keep standard access logs and security cookies.",
-    "zh-Hant": "PDF 在你的瀏覽器裡解析，不會傳到本服務。註記不會自動保存，請記得匯出。在支援的宿主內，只有主動按下「交由 ChatGPT 下載」時，預覽的註記或截圖會交給宿主，可能含檔名或引文。託管平台可能有一般存取紀錄和安全 Cookie。"
+    "en": "Your PDF is parsed in your browser and is not uploaded to this service. Send to ChatGPT shares previewed PDF text; Download via ChatGPT shares previewed notes or captures. These may include filenames or quotes and are handled under the host's policies. Nothing is sent automatically. Export notes before closing. The hosting platform may keep standard access logs and security cookies.",
+    "zh-Hant": "PDF 在瀏覽器解析，不會傳到本服務。「傳給 ChatGPT」會分享預覽的 PDF 文字；「交由 ChatGPT 下載」會分享預覽的註記或截圖，可能包含檔名或引文，依宿主政策處理。不會自動傳送。註記請在關閉前匯出。託管平台可能有一般存取紀錄和安全 Cookie。"
   },
   "ui.view.heading": {
     "en": "Reading layout",

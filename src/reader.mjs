@@ -7,9 +7,10 @@ import { ContinuousLayout, visibleWindow } from './continuous-layout.mjs';
 import { SEARCH_WORKER_SOURCE } from './search-engine.mjs';
 import { AnnotationStore, ANNOTATION_COLORS, normalizePageRect } from './annotations.mjs';
 import { createI18n } from './i18n.mjs';
+import { preparePdfText, pdfItemsText, canSharePdfText, sendPdfText } from './chat-context.mjs';
 const i18n = createI18n();
 const $ = id => document.getElementById(id);
-const state = { epoch:0, pdf:null, task:null, worker:null, rawWorker:null, workerUrl:null, render:null, textLayer:null, page:null, pageNumber:1, scale:1, busy:false, name:'', cache:new PageTextCache(), range:null, searching:false, searchCancel:false, searchNext:1, searchQuery:'', searchCount:0, selection:'', selectionPage:0, selectionRects:[], views:new Map(), mode:'continuous', crop:0, other:1, history:[], layout:null, fitWidth:true, scrollVersion:0, programScroll:null, pendingPage:null, notes:null, tab:'search', thumbStart:1, outlineLoaded:false, searchWorker:null, searchWorkerUrl:null, searchRequest:0, exportData:null, pendingAction:null };
+const state = { epoch:0, pdf:null, task:null, worker:null, rawWorker:null, workerUrl:null, render:null, textLayer:null, page:null, pageNumber:1, scale:1, busy:false, name:'', cache:new PageTextCache(), range:null, searching:false, searchCancel:false, searchNext:1, searchQuery:'', searchCount:0, selection:'', selectionPage:0, selectionRects:[], selectionTruncated:false, views:new Map(), mode:'continuous', crop:0, other:1, history:[], layout:null, fitWidth:true, scrollVersion:0, programScroll:null, pendingPage:null, notes:null, tab:'search', thumbStart:1, outlineLoaded:false, searchWorker:null, searchWorkerUrl:null, searchRequest:0, exportData:null, pendingAction:null, chatPreview:null, chatAbort:null, chatSequence:0, chatSending:false, chatSent:false };
 const ERRORS = { EMPTY:'errorEmpty', SIZE:'errorSize', RANGE:'errorRange', HEADER:'errorHeader', PAGES:'errorPages', PASSWORD:'errorPassword', TEXT:'errorText', TIMEOUT:'errorTimeout', WORKER:'errorWorker', INVALID:'errorInvalid' };
 function status(message, error=false) { if(typeof message==='string'){i18n.clearText($('status'));$('status').textContent=message;}else i18n.text($('status'),message); $('status').dataset.error=String(error); }
 function controls() {
@@ -29,8 +30,9 @@ function controls() {
   $('page-number').value=state.pageNumber;
   $('page-count').textContent=`／${state.pdf?.numPages ?? 0}`;
   $('zoom').textContent=`${Math.round((state.views.get(state.pageNumber)?.scale??state.scale)*100)}%`;
+  updateChatControls();
 }
-function clearQuote(){ state.selection=''; state.selectionPage=0;state.selectionRects=[]; $('citation').value=''; $('copy').disabled=true; window.getSelection()?.removeAllRanges(); }
+function clearQuote(){ state.selection=''; state.selectionPage=0;state.selectionRects=[];state.selectionTruncated=false; resetChatPreview(); $('citation').value=''; $('copy').disabled=true; window.getSelection()?.removeAllRanges(); }
 function closeDocument(message=i18n.message('documentClosed')) {
   ++state.epoch;state.searchCancel=true;state.range?.abort();stopSearchWorker();clearViews();clearThumbnails();state.notes=null;state.pendingAction=null;state.thumbStart=1;state.history=[];state.outlineLoaded=false;state.pendingPage=null;state.layout=null;state.programScroll=null;state.exportData=null;$('pages').style.height='';$('pages').style.width='';$('note-list').replaceChildren();i18n.text($('outline'),"ui.nav.outlineEmpty");i18n.clearValue($('export-preview'));$('export-preview').value='';$('region-preview').hidden=true;$('region-preview').removeAttribute('src');$('note-comment').value='';$('host-download').disabled=true;$('discard-dialog').hidden=true;
   setToolsOpen(false,false);
@@ -245,10 +247,11 @@ $('search-cancel').addEventListener('click',()=>{state.searchCancel=true;i18n.te
 $('search-next').addEventListener('click',event=>void searchDocument(event,true));
 $('search').addEventListener('click',searchDocument);
 $('query').addEventListener('keydown',event=>{if(event.key==='Enter')void searchDocument(event);});
-document.addEventListener('selectionchange',()=>{
+function captureSelection(){
  const sel=window.getSelection();if(!sel||sel.isCollapsed||!sel.rangeCount)return;
- for(const v of state.views.values())if(v.text.contains(sel.anchorNode)&&v.text.contains(sel.focusNode)){const box=v.surface.getBoundingClientRect();state.selection=sel.toString().slice(0,LIMITS.quoteChars);state.selectionPage=v.number;state.selectionRects=Array.from(sel.getRangeAt(0).getClientRects()).slice(0,200).flatMap(r=>{try{return[normalizePageRect([r.x-box.x,r.y-box.y,r.width,r.height],box.width,box.height)];}catch{return[];}});break;}
-});
+ for(const v of state.views.values())if(v.text.contains(sel.anchorNode)&&v.text.contains(sel.focusNode)){const box=v.surface.getBoundingClientRect();const selected=sel.toString(),text=selected.slice(0,LIMITS.quoteChars),truncated=selected.length>LIMITS.quoteChars;const changed=state.selection!==text||state.selectionPage!==v.number||state.selectionTruncated!==truncated;state.selection=text;state.selectionTruncated=truncated;state.selectionPage=v.number;if(changed)resetChatPreview();state.selectionRects=Array.from(sel.getRangeAt(0).getClientRects()).slice(0,200).flatMap(r=>{try{return[normalizePageRect([r.x-box.x,r.y-box.y,r.width,r.height],box.width,box.height)];}catch{return[];}});break;}
+}
+document.addEventListener('selectionchange',captureSelection);
 $('cite').addEventListener('click',()=>{
   const source=i18n.t('citationSource',{filename:state.name,page:state.selectionPage||state.pageNumber,total:state.pdf.numPages});
   const quote=state.selection?`\n${i18n.t('citationQuoteHeading')}\n${state.selection}`:'';
@@ -278,8 +281,8 @@ async function loadNavigation(){
  }catch(error){if(epoch===state.epoch&&generation===thumbEpoch)status(i18n.message('navigationFailed'),true);}
  finally{if(epoch===state.epoch){state.busy=false;controls();}}
 }
-function setTab(tab){state.tab=tab;for(const name of ['nav','search','notes','view']){$(`panel-${name}`).hidden=name!==tab;$(`tab-${name}`).setAttribute('aria-selected',String(name===tab));}if(tab==='nav')void loadNavigation();else clearThumbnails();if(tab==='notes')refreshNotes();}
-for(const tab of ['nav','search','notes','view'])$(`tab-${tab}`).addEventListener('click',()=>setTab(tab));
+function setTab(tab){state.tab=tab;for(const name of ['nav','search','notes','view','chat']){$(`panel-${name}`).hidden=name!==tab;$(`tab-${name}`).setAttribute('aria-selected',String(name===tab));}if(tab==='nav')void loadNavigation();else clearThumbnails();if(tab==='notes')refreshNotes();}
+for(const tab of ['nav','search','notes','view','chat'])$(`tab-${tab}`).addEventListener('click',()=>setTab(tab));
 $('thumb-prev').addEventListener('click',()=>{if(!state.busy){state.thumbStart=Math.max(1,state.thumbStart-8);void loadNavigation();}});
 $('thumb-next').addEventListener('click',()=>{if(state.pdf&&!state.busy){state.thumbStart=Math.min(Math.max(1,state.pdf.numPages-7),state.thumbStart+8);void loadNavigation();}});
 $('back').addEventListener('click',()=>{if(!state.busy&&state.history.length)void renderPage(state.history.pop());});
@@ -326,6 +329,50 @@ function attachDrawing(view){
  };
 }
 function exportNotes(format){if(!state.notes)return;try{const text=format==='json'?state.notes.exportJSON():state.notes.exportMarkdown(i18n.language);i18n.clearValue($('export-preview'));$('export-preview').value=text;$('region-preview').hidden=true;state.exportData={name:format==='json'?'pdf-notes.json':'pdf-notes.md',mime:format==='json'?'application/json':'text/markdown',text};updateExportButton();}catch(error){status(i18n.message('exportFailed',{error:error.message}),true);}}
+function resetChatPreview(){
+  state.chatSequence=(state.chatSequence||0)+1;
+  state.chatAbort?.abort();state.chatAbort=null;state.chatPreview=null;state.chatSending=false;state.chatSent=false;
+  $('chat-preview').value='';i18n.text($('chat-status'),'chatIdle');updateChatControls();
+}
+function updateChatControls(){
+  const extracting=!!state.chatAbort,busy=extracting||state.chatSending,ready=!!state.pdf&&!state.busy;
+  $('chat-toggle').disabled=!state.pdf;
+  $('chat-scope').disabled=!ready||busy;$('chat-prepare').disabled=!ready||busy;
+  $('chat-cancel').hidden=!extracting;
+  $('chat-send').disabled=!state.chatPreview||busy||state.chatSent||!canSharePdfText(app);
+  $('chat-copy').disabled=!state.chatPreview||busy;
+  $('chat-host-hint').hidden=canSharePdfText(app);
+}
+async function prepareChatPreview(){
+  if(!state.pdf||state.busy||state.chatAbort||state.chatSending)return;
+  resetChatPreview();
+  const sequence=state.chatSequence,doc=state.pdf,controller=new AbortController();state.chatAbort=controller;updateChatControls();
+  try{
+    const preview=await preparePdfText({scope:$('chat-scope').value,filename:state.name,pageCount:doc.numPages,currentPage:state.pageNumber,selection:state.selection,selectionPage:state.selectionPage,selectionTruncated:state.selectionTruncated,signal:controller.signal,
+      readPage:async number=>{const page=await doc.getPage(number);const text=await page.getTextContent();return pdfItemsText(text.items);},
+      onProgress:values=>{if(sequence===state.chatSequence)i18n.text($('chat-status'),'chatPreparing',values);}});
+    if(sequence!==state.chatSequence||doc!==state.pdf)return;
+    state.chatPreview=preview;$('chat-preview').value=preview.text;
+    i18n.text($('chat-status'),'chatReady',{pages:preview.pages.length,chars:preview.text.length,empty:preview.emptyPages.length});
+  }catch(error){
+    if(sequence!==state.chatSequence)return;
+    const keys={NO_SELECTION:'chatNoSelection',SELECTION_LONG:'chatSelectionLong',NO_TEXT:'chatNoText',TOO_LARGE:'chatTooLarge',TIMEOUT:'chatTimeout',CANCELLED:'chatCancelled'};
+    i18n.text($('chat-status'),keys[error.code]||'chatPrepareFailed');
+  }finally{if(sequence===state.chatSequence){state.chatAbort=null;updateChatControls();}}
+}
+async function sendChatPreview(){
+  if(!state.chatPreview||state.chatSending||state.chatSent||!canSharePdfText(app))return;
+  const sequence=state.chatSequence,preview=state.chatPreview;state.chatSending=true;updateChatControls();i18n.text($('chat-status'),'chatSending');
+  try{await sendPdfText(app,preview);if(sequence===state.chatSequence){state.chatSent=true;i18n.text($('chat-status'),'chatAccepted');}}
+  catch(error){if(sequence===state.chatSequence)i18n.text($('chat-status'),error.code==='HOST_REJECTED'?'chatRejected':'chatUnconfirmed');}
+  finally{if(sequence===state.chatSequence){state.chatSending=false;updateChatControls();}}
+}
+$('chat-toggle').addEventListener('click',()=>{setTab('chat');setToolsOpen(true);});
+$('chat-scope').addEventListener('change',resetChatPreview);
+$('chat-prepare').addEventListener('click',()=>void prepareChatPreview());
+$('chat-send').addEventListener('click',()=>void sendChatPreview());
+$('chat-cancel').addEventListener('click',()=>{resetChatPreview();i18n.text($('chat-status'),'chatCancelled');});
+$('chat-copy').addEventListener('click',()=>{if(!state.chatPreview)return;$('chat-preview').focus();$('chat-preview').select();i18n.text($('chat-status'),'chatCopyHint');});
 function updateExportButton(){$('host-download').disabled=!state.exportData||!app?.getHostCapabilities()?.downloadFile;}
 $('export-json').addEventListener('click',()=>exportNotes('json'));$('export-md').addEventListener('click',()=>exportNotes('md'));
 $('note-import').addEventListener('change',async()=>{const file=$('note-import').files?.[0];$('note-import').value='';if(!file||!state.notes)return;if(file.size>5*1024*1024){status(i18n.message('importTooLarge'),true);return;}const epoch=state.epoch;try{const text=await file.text();if(epoch!==state.epoch)return;const result=state.notes.importJSON(text);refreshNotes();status(i18n.message('importDone',{added:result.added,skipped:result.skipped}));}catch(error){status(i18n.message('importFailed',{error:error.message}),true);}});
@@ -336,12 +383,13 @@ $('discard-confirm').addEventListener('click',()=>{const action=state.pendingAct
 $('discard-export').addEventListener('click',()=>{$('discard-dialog').hidden=true;state.pendingAction=null;setTab('notes');setToolsOpen(true);exportNotes('json');});
 
 window.addEventListener('pagehide',()=>closeDocument(''));
-// Normal reading sends no PDF content. Explicit disclosed export alone sends the chosen resource to the host download API.
+// Normal reading stays local. Previewed text or exports are shared only by their explicit buttons.
 let app=null;
 function updateHost(context){
   if(context?.theme==='light'||context?.theme==='dark')applyDocumentTheme(context.theme);
   for(const mode of ['inline','fullscreen'])$(mode).hidden=!context?.availableDisplayModes?.includes(mode)||context.displayMode===mode;
   updateExportButton();
+  updateChatControls();
   i18n.clearText($('host-status'));$('host-status').textContent=`MCP App · ${context?.displayMode??'inline'}`;
 }
 if(window.parent!==window && !document.documentElement.hasAttribute('data-local')){

@@ -2,14 +2,16 @@
 
 English | [繁體中文](README.zh-Hant.md)
 
-Jingdu is a PDF reader that sits next to your ChatGPT conversation. In a ChatGPT setup where Jingdu is connected, open the reader window and choose a PDF from your device. You can then read the original while you talk it through with ChatGPT. Paste any passage into the chat with its page number, and ask ChatGPT to explain, compare, or summarize it. The app is currently in a trial phase. Its interface defaults to English; choose 繁體中文 from the Language control in the toolbar to switch. The language choice stays only in the current window.
+Jingdu is a PDF reader that sits next to your ChatGPT conversation. Open a PDF from your device, preview the text you want to share, then send it to the conversation in a supported host. You can read the original while you ask ChatGPT to explain, compare, or summarize the shared text. The app is currently in a trial phase. Its interface defaults to English; choose 繁體中文 from the Language control in the toolbar to switch. The language choice stays only in the current window.
 
 ## How to use
 
 1. In a ChatGPT conversation where Jingdu is connected, open 「PDF 閱讀器」 (PDF Reader) and choose a PDF from your device.
-2. Select the text you want to discuss, open **Tools → Search**, click **Create page citation**, then click **Select citation text**.
-3. Press Ctrl+C (⌘+C on Mac) and paste it into your ChatGPT conversation.
-4. Ask your question. For example, have ChatGPT explain the passage, compare it with another passage you paste into the chat, or turn it into key points.
+2. Click **ChatGPT** in the reader toolbar. Choose **Selected text**, **Current PDF page**, or **Whole document text**, then click **Prepare preview**.
+3. Check the preview and click **Send to ChatGPT**. If sending isn't available, select the preview text, copy with Ctrl+C (⌘+C on Mac), and paste it into your conversation.
+4. Ask your question in the conversation. Opening a PDF or preparing a preview does not give ChatGPT its contents.
+
+This shares extracted text with the filename and physical PDF page numbers, which may differ from printed page numbers. The original PDF, images, diagrams, and local notes are not attached. Pages without extractable text are marked in the preview. Large documents may need to be shared a page or passage at a time; see the [development notes](docs/development.md#pdf-text-sharing) for limits.
 
 To find passages or check the original, use search, the table of contents, or the two-page and side-by-side views in the reader window. You can also highlight, underline, comment, draw by hand, or capture an area of a page. In the export preview, copy your notes as JSON or Markdown. To continue later, reopen the same PDF and import the JSON.
 
@@ -29,7 +31,7 @@ Annotations stay only in the current window. They are not saved automatically an
 
 ## Privacy
 
-Your PDF is processed in your browser and is not uploaded to this service. In supported hosts, previewed notes or captures are sent to the host only when you click **Download via ChatGPT** (「交由 ChatGPT 下載」 in Traditional Chinese). This content may include file names or quoted text, and the host handles it under its own policies. On the standalone site, host download is not supported and this control is shown as disabled. You can copy the text or save the image yourself instead.
+Your original PDF is processed in your browser and is not uploaded to this service. **Send to ChatGPT** shares everything in the text preview with the host, under its policies. **Download via ChatGPT** (「交由 ChatGPT 下載」 in Traditional Chinese) separately shares previewed notes or captures. These may include filenames or quoted text. Reading and preparing previews do not send content. Closing the reader does not retract content already shared. On the standalone site, sending and host download are disabled; you can copy text or save an image yourself.
 
 The site is hosted on Cloudflare, which may keep standard access logs and set security cookies. During the trial, we recommend using non-sensitive documents.
 

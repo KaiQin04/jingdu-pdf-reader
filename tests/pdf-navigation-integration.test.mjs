@@ -5,6 +5,7 @@ import {getDocument} from 'pdfjs-dist/legacy/build/pdf.mjs';
 import {pdfOptions} from '../src/pdf-policy.mjs';
 import {flattenOutline,internalDestination} from '../src/navigation.mjs';
 import {searchText} from '../src/search-engine.mjs';
+import {preparePdfText,pdfItemsText} from '../src/chat-context.mjs';
 
 // Real parser + committed synthetic fixture; no mocked PageViewport or network.
 // Reproduce the app's fixed, offline binary-data allowlist; PDF data never supplies a URL.
@@ -33,6 +34,15 @@ async function destinationPage(doc,dest){
   assert.ok(Array.isArray(resolved)&&resolved.length>0);
   return Number.isInteger(resolved[0])?resolved[0]+1:(await doc.getPageIndex(resolved[0]))+1;
 }
+
+test('actual PDF.js text from every synthetic page reaches a complete sharing preview',async()=>{
+  await withAcademicDocument(async doc=>{
+    const preview=await preparePdfText({scope:'document',filename:'academic-synthetic.pdf',pageCount:doc.numPages,readPage:async number=>pdfItemsText((await (await doc.getPage(number)).getTextContent()).items)});
+    assert.deepEqual(preview.pages,[1,2,3,4,5,6]);assert.deepEqual(preview.emptyPages,[]);
+    for(let number=1;number<=6;number++)assert.ok(preview.text.includes(`--- PDF page ${number} ---`));
+    assert.match(preview.text,/Academic sample page 1/);assert.match(preview.text,/Academic sample page 6/);
+  });
+});
 
 test('actual PDF.js outlines resolve to all six academic fixture pages',async()=>{
   await withAcademicDocument(async doc=>{

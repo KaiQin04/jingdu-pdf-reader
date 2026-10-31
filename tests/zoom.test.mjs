@@ -41,7 +41,7 @@ test('zoom buttons disable at actual per-page extent instead of silently no-op',
  const code=source.slice(source.indexOf('function controls()'),source.indexOf('function clearQuote()'));
  for(const [width,height,shown,plus,minus] of [[600,800,1,false,false],[600,800,6,true,false],[600,2000,3,true,false],[50000,50000,.12,true,true],[600,800,.25,false,true]]){
   const dom=new Map(),state={pdf:{numPages:5},page:{getViewport:()=>({width,height})},pageNumber:1,scale:shown,views:new Map([[1,{scale:shown}]]),history:[]};
-  vm.runInNewContext(code+';controls()',{state,displayScale:policy.displayScale,$:id=>{if(!dom.has(id))dom.set(id,{});return dom.get(id)}});
+  vm.runInNewContext(code+';controls()',{state,displayScale:policy.displayScale,updateChatControls(){},$:id=>{if(!dom.has(id))dom.set(id,{});return dom.get(id)}});
   assert.equal(dom.get('zoom-in').disabled,plus);assert.equal(dom.get('zoom-out').disabled,minus);
  }
 });

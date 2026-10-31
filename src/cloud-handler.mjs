@@ -64,7 +64,7 @@ function parseBody(raw){
 
 export function createCloudWorker({html,csp,documents={}}){
   const readerHtml=html.replace('<html lang="zh-Hant">','<html lang="zh-Hant" data-local>');
-  const shell='<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>靜讀 PDF 閱讀器</title><link rel="icon" type="image/png" href="'+ICON_DATA_URI+'"><style>html,body,iframe{margin:0;width:100%;height:100%;border:0;display:block}body{display:flex;flex-direction:column}nav{font:14px system-ui;padding:8px;background:#f8fafc}nav a{margin-right:20px;color:#234}iframe{flex:1;min-height:0}</style><nav aria-label="服務說明"><a href="/privacy" target="_blank" rel="noopener">隱私</a><a href="/help" target="_blank" rel="noopener">說明與限制</a><a href="/licenses" target="_blank" rel="noopener">開源授權</a></nav><iframe title="靜讀 PDF 閱讀器" sandbox="allow-scripts" src="/reader"></iframe></html>';
+  const shell='<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>靜讀 PDF 閱讀器</title><link rel="icon" type="image/png" href="'+ICON_DATA_URI+'"><style>html,body,iframe{margin:0;width:100%;height:100%;border:0;display:block}</style><iframe title="靜讀 PDF 閱讀器" sandbox="allow-scripts" src="/reader"></iframe></html>';
   let active=0;
   return {async fetch(request,env){
     // Anonymous fixed-content service: never read identity, cookies or authorization.

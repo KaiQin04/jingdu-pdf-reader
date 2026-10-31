@@ -41,7 +41,7 @@ The site is hosted on Cloudflare, which may keep standard access logs and set se
 
 ## More
 
-- [Try the standalone web reader](https://jingdu-pdf-reader.qqqqqwz.chatgpt.site)
+- [Try the standalone web reader](https://pdf.zhiweiqin.me)
 - [ChatGPT connection and development notes (Traditional Chinese)](docs/development.md)
 - [License](LICENSE)
 - [Third-party licenses (Traditional Chinese)](docs/third-party-licenses.md)

@@ -43,7 +43,7 @@ PDF 在你的瀏覽器裡解析，不會傳到本服務。在支援的宿主中�
 
 ## 其他
 
-- [獨立網頁試用](https://jingdu-pdf-reader.qqqqqwz.chatgpt.site)
+- [獨立網頁試用](https://pdf.zhiweiqin.me)
 - [ChatGPT 接入與開發說明](docs/development.md)
 - [授權](LICENSE)
 - [第三方授權](docs/third-party-licenses.md)

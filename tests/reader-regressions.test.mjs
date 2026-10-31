@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import { createI18n } from '../src/i18n.mjs';
 const source=readFileSync(new URL('../src/reader.mjs',import.meta.url),'utf8');
 // Execute the actual named function source with bounded DOM doubles, not a copy
 // of its logic. Browser layout/host integration remain separate UI tests.
 function fn(name,next,globals={}){
  const start=source.indexOf(`function ${name}(`),end=source.indexOf(next,start);
  assert.ok(start>=0&&end>start,`source boundary for ${name}`);
- return vm.runInNewContext(`(${source.slice(start,end).trim()})`,globals);
+ return vm.runInNewContext(`(${source.slice(start,end).trim()})`,{i18n:createI18n('zh-Hant'),...globals});
 }
 function node(){return {value:'',hidden:false,disabled:false,style:{},children:[],attributes:{},classList:{add(){}},append(...v){this.children.push(...v)},replaceChildren(){this.children=[]},setAttribute(k,v){this.attributes[k]=v},removeAttribute(k){delete this.attributes[k];delete this[k]},addEventListener(){},focus(){},remove(){this.removed=true}};}
 const nodes=()=>{const values=new Map();return id=>{if(!values.has(id))values.set(id,node());return values.get(id)}};

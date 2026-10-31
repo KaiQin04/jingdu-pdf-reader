@@ -106,7 +106,11 @@ test('opaque sandbox UI keeps classic offline worker and avoids blocked form sub
   const build=await readFile(new URL('../scripts/build.mjs',import.meta.url),'utf8');
   const csp=await readFile(new URL('../dist/csp.txt',import.meta.url),'utf8');
   assert.match(reader,/new Worker\(state\.workerUrl,\{name:'private-pdf-parser'\}\)/);
-  assert.match(build,/format:'iife'/);
+  assert.match(build,/await bundlePdfWorker\(\)/);
+  const {bundlePdfWorker}=await import('../scripts/pdf-worker.mjs');
+  const {Script}=await import('node:vm');
+  const parserSource=await bundlePdfWorker();
+  assert.doesNotThrow(()=>new Script(parserSource));
   assert.match(reader,/\$\('search'\)\.addEventListener\('click',searchDocument\)/);
   assert.match(reader,/event\.key==='Enter'/);
   assert.doesNotMatch(template,/<form\b/i);
@@ -195,7 +199,7 @@ test('built license route retains complete project and bundled dependency notice
  const response=await worker.fetch(req('/licenses'),env);
  assert.equal(response.status,200);
  const text=await response.text();
- for(const path of ['LICENSE','licenses/PDFJS-LICENSE','licenses/CMAPS-LICENSE','licenses/FONT-LICENSE-FOXIT','licenses/FONT-LICENSE-LIBERATION','licenses/MCP-EXT-APPS-LICENSE','licenses/MCP-CORE-LICENSE','licenses/MCP-SERVER-LICENSE','licenses/MCP-CLIENT-LICENSE','licenses/MCP-NODE-LICENSE','licenses/ZOD-LICENSE','licenses/CONTENT-TYPE-LICENSE']){
+ for(const path of ['LICENSE','licenses/PDFJS-LICENSE','licenses/CMAPS-LICENSE','licenses/FONT-LICENSE-FOXIT','licenses/FONT-LICENSE-LIBERATION','licenses/PDFJS-JBIG2-LICENSE','licenses/JBIG2-LICENSE','licenses/PDFJS-OPENJPEG-LICENSE','licenses/OPENJPEG-LICENSE','licenses/MCP-EXT-APPS-LICENSE','licenses/MCP-CORE-LICENSE','licenses/MCP-SERVER-LICENSE','licenses/MCP-CLIENT-LICENSE','licenses/MCP-NODE-LICENSE','licenses/ZOD-LICENSE','licenses/CONTENT-TYPE-LICENSE']){
   assert.ok(text.includes(await readFile(new URL('../'+path,import.meta.url),'utf8')),path);
  }
  assert.match(text,/Bundled license information/);

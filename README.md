@@ -1,37 +1,47 @@
-# 靜讀 PDF 閱讀器
+# Jingdu PDF Reader
 
-繁體中文 | [English](README.en.md)
+English | [繁體中文](README.zh-Hant.md)
 
-靜讀是放在 ChatGPT 對話旁邊的 PDF 閱讀器。在已接入靜讀的 ChatGPT 中開啟閱讀視窗，選一份自己裝置上的 PDF，就能一邊看原文、一邊和 ChatGPT 討論。想問的段落可以連同頁碼貼進對話，請它解釋、比較或整理。目前是試用階段。
+Jingdu is a PDF reader that sits next to your ChatGPT conversation. In a ChatGPT setup where Jingdu is connected, open the reader window and choose a PDF from your device. You can then read the original while you talk it through with ChatGPT. Paste any passage into the chat with its page number, and ask ChatGPT to explain, compare, or summarize it. The app is currently in a trial phase. Its interface defaults to English; choose 繁體中文 from the Language control in the toolbar to switch. The language choice stays only in the current window.
 
-## 怎麼用
+## How to use
 
-1. 在已接入靜讀的 ChatGPT 中開啟「PDF 閱讀器」，選一份裝置上的 PDF。
-2. 選取想討論的文字，在「工具 → 搜尋」按「建立頁碼引用」，再按「選取引用文字」。
-3. 按 Ctrl+C（Mac 為 ⌘+C）複製，貼到 ChatGPT 對話裡。
-4. 接著提問，例如請它解釋這段的意思、和你另外貼入的段落比較，或整理成重點。
+1. In a ChatGPT conversation where Jingdu is connected, open 「PDF 閱讀器」 (PDF Reader) and choose a PDF from your device.
+2. Select the text you want to discuss, open **Tools → Search**, click **Create page citation**, then click **Select citation text**.
+3. Press Ctrl+C (⌘+C on Mac) and paste it into your ChatGPT conversation.
+4. Ask your question. For example, have ChatGPT explain the passage, compare it with another passage you paste into the chat, or turn it into key points.
 
-需要找段落或對照原文時，可以在閱讀視窗裡搜尋、看目錄，或切換雙頁、雙窗比較。也能標示、加底線、留言、手寫或截取區域。註記可在匯出預覽複製 JSON 或 Markdown，重新開啟同一份 PDF 後再匯入 JSON 接續。
+To find passages or check the original, use search, the table of contents, or the two-page and side-by-side views in the reader window. You can also highlight, underline, comment, draw by hand, or capture an area of a page. In the export preview, copy your notes as JSON or Markdown. To continue later, reopen the same PDF and import the JSON.
 
-## 記得先保存
+## Interface preview
 
-註記只留在目前視窗，不會自動保存，也不會寫進原 PDF。關閉或重新整理前，請先匯出。
+![English reader interface](docs/images/reader-en.jpg)
 
-## 隱私
+Local standalone preview using a synthetic PDF, showing the English interface and search results. No real user documents. This does not demonstrate ChatGPT installation, sidebar pinning, or cross-account verification.
 
-PDF 在你的瀏覽器裡解析，不會傳到本服務。在支援的宿主中，只有你按下「交由 ChatGPT 下載」，才會把預覽的註記或截圖交給宿主。內容可能含檔名或引文，宿主會依自己的規則處理。獨立網站不支援宿主下載，可自行複製文字或另存圖片。
+## ChatGPT sidebar entry
 
-網站由 Cloudflare 託管，可能留下一般存取紀錄和安全 Cookie。試用期間，建議先用不敏感的文件。
+The app declares both global-sidebar and conversation-side-panel entries, as described in the [official entrypoint reference](https://developers.openai.com/plugins/build/extensions#sidebar-apps). They require a connected app and a host that supports these extensions. Cloning this repository does not install or automatically pin the plugin. Appearance and automatic pinning have not been verified on another account; public end-to-end MCP access is also unconfirmed. See the [connection notes](docs/development.md#mcp).
 
-## 目前限制
+## Save before you leave
 
-- 沒有 OCR。純影像的掃描檔無法搜尋文字，有文字層的掃描檔可以。
-- 不能編輯原 PDF，不能從網址載入，也沒有雲端同步。
-- 檔案上限 500 MiB／5,000 頁。檔案越大，越耗記憶體。
+Annotations stay only in the current window. They are not saved automatically and are not written to the original PDF. Export them before closing or refreshing the page.
 
-## 其他
+## Privacy
 
-- [獨立網頁試用](https://jingdu-pdf-reader.qqqqqwz.chatgpt.site)
-- [ChatGPT 接入與開發說明](docs/development.md)
-- [授權](LICENSE)
-- [第三方授權](docs/third-party-licenses.md)
+Your PDF is processed in your browser and is not uploaded to this service. In supported hosts, previewed notes or captures are sent to the host only when you click **Download via ChatGPT** (「交由 ChatGPT 下載」 in Traditional Chinese). This content may include file names or quoted text, and the host handles it under its own policies. On the standalone site, host download is not supported and this control is shown as disabled. You can copy the text or save the image yourself instead.
+
+The site is hosted on Cloudflare, which may keep standard access logs and set security cookies. During the trial, we recommend using non-sensitive documents.
+
+## Current limitations
+
+- No OCR. Image-only scanned PDFs cannot be searched; scanned PDFs with a text layer can.
+- You cannot edit the original PDF, load a PDF from a URL, or sync to the cloud.
+- Each PDF must be no larger than 500 MiB and no longer than 5,000 pages. Larger files use more memory.
+
+## More
+
+- [Try the standalone web reader](https://jingdu-pdf-reader.qqqqqwz.chatgpt.site)
+- [ChatGPT connection and development notes (Traditional Chinese)](docs/development.md)
+- [License](LICENSE)
+- [Third-party licenses (Traditional Chinese)](docs/third-party-licenses.md)

@@ -63,8 +63,8 @@ function parseBody(raw){
 }
 
 export function createCloudWorker({html,csp,documents={}}){
-  const readerHtml=html.replace('<html lang="zh-Hant">','<html lang="zh-Hant" data-local>');
-  const shell='<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>靜讀 PDF 閱讀器</title><link rel="icon" type="image/png" href="'+ICON_DATA_URI+'"><style>html,body,iframe{margin:0;width:100%;height:100%;border:0;display:block}</style><iframe title="靜讀 PDF 閱讀器" sandbox="allow-scripts" src="/reader"></iframe></html>';
+  const readerHtml=html.replace(/<html lang="(en|zh-Hant)">/,'<html lang="$1" data-local>');
+  const shell='<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jingdu PDF Reader</title><link rel="icon" type="image/png" href="'+ICON_DATA_URI+'"><style>html,body,iframe{margin:0;width:100%;height:100%;border:0;display:block}</style><iframe title="Jingdu PDF Reader" sandbox="allow-scripts" src="/reader"></iframe></html>';
   let active=0;
   return {async fetch(request,env){
     // Anonymous fixed-content service: never read identity, cookies or authorization.

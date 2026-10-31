@@ -8,11 +8,15 @@
 | 同套件 CMaps | Adobe CMap 授權 | [CMAPS-LICENSE](../licenses/CMAPS-LICENSE) |
 | 同套件 Foxit `.pfb` 字型（取自 PDFium） | PDFium Authors 三條款 BSD | [FONT-LICENSE-FOXIT](../licenses/FONT-LICENSE-FOXIT) |
 | 同套件 Liberation Sans `.ttf` 字型，1.07.4 | GPLv2，加字型嵌入與實體產品例外 | [FONT-LICENSE-LIBERATION](../licenses/FONT-LICENSE-LIBERATION) |
+| 同套件 CCITT／JBIG2 JavaScript 解碼器 | PDFium BSD 及 Apache-2.0；Mozilla wrapper 為 Apache-2.0 | [JBIG2-LICENSE](../licenses/JBIG2-LICENSE)、[PDFJS-JBIG2-LICENSE](../licenses/PDFJS-JBIG2-LICENSE) |
+| 同套件 OpenJPEG JavaScript 解碼器 | 所附 OpenJPEG BSD 及 Mozilla BSD 文字 | [OPENJPEG-LICENSE](../licenses/OPENJPEG-LICENSE)、[PDFJS-OPENJPEG-LICENSE](../licenses/PDFJS-OPENJPEG-LICENSE) |
 | MCP client／core／server `2.4.0`、node `2.1.2`、ext-apps `2.0.4` | 所附 Apache-2.0 遷移說明及未取得重新授權同意之 MIT 貢獻 | [client](../licenses/MCP-CLIENT-LICENSE)、[core](../licenses/MCP-CORE-LICENSE)、[server](../licenses/MCP-SERVER-LICENSE)、[node](../licenses/MCP-NODE-LICENSE)、[ext-apps](../licenses/MCP-EXT-APPS-LICENSE) |
 | Zod `4.6.7` | MIT | [ZOD-LICENSE](../licenses/ZOD-LICENSE) |
 | MCP 預打包程式中的 `content-type` | MIT；上游 bundle 的 notices 未標示獨立版本 | [CONTENT-TYPE-LICENSE](../licenses/CONTENT-TYPE-LICENSE) |
 
 原有 10 份授權與本次安裝的對應套件檔案逐位元相同，未修改。MCP ext-apps 的套件 metadata／鎖檔仍標示 MIT，但隨附 LICENSE 含遷移說明；此處保留完整原文，不用單一標籤取代。
+
+掃描影像空白修正另外保留鎖定套件內 4 份解碼器授權全文，逐位元複製，並納入建置後 `/licenses`。`scripts/pdf-worker.mjs` 將上游 Worker 的動態解碼器載入改成建置時靜態匯入；解碼器內容未修改，不需要外部下載或 WASM 編譯。這是建置轉接，不宣稱原封不動散布整份 Worker。
 
 `scripts/build.mjs` 會將上述元件的授權、自有程式 MIT 文字及 esbuild 產生的 `THIRD-PARTY-NOTICES.txt` 放進 `dist/licenses/`、`dist/documents.json`。Worker 的 `/licenses` 可讀取全文，`npm test` 會核對建置後路由包含這些完整文字。依賴本身與產物不提交至本倉庫；本次只發布來源與合成 fixtures。開發／測試工具沒有打包進閱讀器。
 

@@ -42,5 +42,5 @@ test('scroll within same page after views cleared retries aborted render',async(
 test('fresh reader opens in continuous mode without layout or next-page buttons',()=>{
  assert.match(source,/mode:'continuous'/,'initial state must allow wheel/trackpad scroll through the document');
  const html=readFileSync(new URL('../src/reader.html',import.meta.url),'utf8');
- assert.match(html,/<option value="continuous" selected>/,'visible layout selection must agree with initial state');
+ assert.match(html,/<option value="continuous" selected\b/,'visible layout selection must agree with initial state');
 });

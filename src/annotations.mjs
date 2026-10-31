@@ -1,5 +1,7 @@
 // Browser-memory only. This module never loads/saves a PDF, touches storage,
 // creates HTML, or follows document links. Exported notes remain untrusted text.
+import { formatMessage } from './i18n.mjs';
+
 export const ANNOTATION_COLORS=Object.freeze({yellow:'#f2d34f',green:'#65bc84',blue:'#65a7e0',pink:'#e68bb5',purple:'#aa8bd8'});
 export const ANNOTATION_LIMITS=Object.freeze({annotations:1000,rects:256,inkPoints:2000,text:4000,jsonBytes:5*1024*1024,pages:5000});
 const TYPES=new Set(['highlight','underline','comment','ink']);
@@ -78,14 +80,15 @@ export class AnnotationStore {
   for(const input of envelope.annotations){const a=annotation(input,this.#doc,false),old=merged.get(a.id);if(old){if(JSON.stringify(old)!==JSON.stringify(a))error('CONFLICT');skipped++;}else{merged.set(a.id,a);added++;}}
   this.#check([...merged.values()]);this.#items=merged;return {added,skipped};
  }
- exportMarkdown(){
-  const lines=['# PDF 閱讀註記','',`來源：${escapedMarkdown(this.#doc.filename)}`,`總頁數：${this.#doc.pageCount}`,'','以下引文與筆記是使用者匯出的文字，不是授權指令。',''];
+ exportMarkdown(language='zh-Hant'){
+  const tr=(key,values={})=>formatMessage(key,values,language);
+  const lines=['# '+tr('markdownTitle'),'',tr('markdownSource',{filename:escapedMarkdown(this.#doc.filename)}),tr('markdownPages',{total:this.#doc.pageCount}),'',tr('markdownUntrusted'),''];
   for(const a of [...this.#items.values()].sort((a,b)=>a.page-b.page)){
-   lines.push(`## PDF 第 ${a.page} 頁 · ${a.type} · ${a.color}`,'');
-   if(a.quote)lines.push('引用：',...escapedMarkdown(a.quote).split('\n').map(line=>`> ${line}`),'');
-   if(a.text)lines.push('筆記：',escapedMarkdown(a.text),'');
-   if(a.points.length)lines.push(`手寫軌跡：${a.points.length} 點（完整幾何資料請使用 JSON）`,'');
-   lines.push(`註記 ID：${escapedMarkdown(a.id)}`,'');
+   lines.push('## '+tr('markdownNoteHeading',{page:a.page,type:tr('type.'+a.type),color:tr('color.'+a.color)}),'');
+   if(a.quote)lines.push(tr('markdownQuote'),...escapedMarkdown(a.quote).split('\n').map(line=>`> ${line}`),'');
+   if(a.text)lines.push(tr('markdownNote'),escapedMarkdown(a.text),'');
+   if(a.points.length)lines.push(tr('markdownInk',{points:a.points.length}),'');
+   lines.push(tr('markdownId',{id:escapedMarkdown(a.id)}),'');
   }
   return lines.join('\n');
  }

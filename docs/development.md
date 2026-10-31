@@ -1,6 +1,6 @@
 # 開發與技術說明
 
-[返回使用說明](../README.md)
+[English README](../README.md) · [繁體中文說明](../README.zh-Hant.md)
 
 ## 本機開發
 
@@ -28,11 +28,21 @@ npm run dev
 
 **已知平台限制（前次交付記錄，2026-10-31）：**匿名驗證客戶端的 MCP POST 曾遭 Cloudflare Error 1010 封鎖，公眾端對端 MCP 連線尚未確認。網站閱讀入口可開啟，不代表 MCP 已可供所有客戶端連線。不要更換識別或路由繞過平台封鎖。
 
+## 側邊入口與釘選
+
+目前 `open_pdf_reader` 保留原有名稱「PDF 閱讀器」、圖標與識別，並宣告 `global` 與 `thread` 兩種入口。[官方入口文件](https://developers.openai.com/plugins/build/extensions#sidebar-apps)分別將它們定義為全域側邊入口與對話側邊入口；[自訂 MCP 說明](https://developers.openai.com/api/docs/guides/custom-mcp-server#how-to-use)要求先完成安裝與接入，且受宿主及 workspace 權限限制。
+
+這能確認程式已提供入口 metadata，不能證明每個帳號一定自動釘選或顯示相同位置。下載 GitHub 原始碼不會自動安裝 plugin。尚未以另一個帳號完成實測，也未變更既有使用者的釘選、權限或 plugin 設定。
+
+介面文字可在英文與繁中切換，預設英文；切換只更新已標記的介面文字，不重新開啟 PDF、不翻譯文件內容／檔名／引文／使用者註記，也不保存語言偏好。JSON 格式與文件指紋不變。Markdown 匯出可依介面語言選擇標題文字。
+
 ## 部署與資料邊界
 
 正式 Worker 需要非秘密環境設定 `PDF_READER_SITE_ORIGIN`，值為服務自己的完整 HTTPS origin。僅提供 `/`、`/reader`、`/privacy`、`/help`、`/licenses` 及 POST `/mcp`；不設檔案儲存或使用者資料庫。預覽 adapter 的 origin 是開發設定，部署其他網域時須與實際服務設定一致。
 
 閱讀器以 sandbox、雜湊腳本、blob Worker 及 `connect-src 'none'` 限制網路活動。PDF 與註記在記憶體處理；宿主下載僅在使用者點擊後傳送預覽中的衍生資料。託管平台仍可能保存一般存取紀錄及安全 Cookie。
+
+`useWasm: false` 保持不變。PDF.js 6 的 CCITT／JBIG2 與 JPEG 2000 JavaScript fallback 由 `scripts/pdf-worker.mjs` 靜態打包，避免原本的動態 URL 載入在離線環境失敗後只留下文字層與白頁。建置會檢查上游載入程式形狀，變動時直接失敗，要求重新核對；未加入 `unsafe-eval` 或 `wasm-unsafe-eval`。CCITT 合成掃描已經像素回歸與瀏覽器驗證；其他編碼不因此視為完整相容性驗收。
 
 MCP 具有 32 KiB 請求上限、巢狀深度 16、10 秒處理時限及每個 isolate 4 個同時請求上限。這些不是跨節點限流，也不是阻斷服務攻擊的保證。
 
@@ -47,6 +57,7 @@ MCP 具有 32 KiB 請求上限、巢狀深度 16、10 秒處理時限及每個 i
 - PDF.js：Apache-2.0；CMaps 另有 Adobe 的授權條件。
 - PDFium／Foxit 標準字型：所附 PDFium Authors 三條款 BSD 文字。
 - Liberation 字型：所附 GPL v2 及例外條款。散布字型時須保留原授權，不應將其改標成主程式的授權。
+- 掃描影像解碼器：保留 PDFium／JBIG2／OpenJPEG 及 Mozilla wrapper 所附 BSD／Apache-2.0 原文。
 - MCP 套件：以套件所附 LICENSE 為準，包含 Apache-2.0 遷移說明及仍適用 MIT 的既有貢獻；不是全部改為同一授權。
 - Zod：MIT。
 

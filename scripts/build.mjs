@@ -2,6 +2,7 @@ import { build } from 'esbuild';
 import { readFile, writeFile, mkdir, readdir, copyFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { ICON_DATA_URI } from '../src/brand.mjs';
+import { bundlePdfWorker } from './pdf-worker.mjs';
 const root = new URL('../', import.meta.url);
 const at = p => new URL(p, root);
 await mkdir(at('dist'), { recursive: true });
@@ -13,15 +14,13 @@ for (const [dir, kind] of [['cmaps','cMapUrl'],['standard_fonts','standardFontDa
     binary[`${kind}/${file}`] = (await readFile(at(`node_modules/pdfjs-dist/${dir}/${file}`))).toString('base64');
   }
 }
-const workerSource = await readFile(at('node_modules/pdfjs-dist/build/pdf.worker.mjs'), 'utf8');
 // No document-derived diagnostics from the parser worker reach browser logs.
-const workerBundle = await build({stdin:{contents:workerSource,sourcefile:'pdf.worker.mjs',resolveDir:at('node_modules/pdfjs-dist/build/').pathname},bundle:true,write:false,format:'iife',platform:'browser',target:'es2022',minify:true,legalComments:'none'});
-const worker = `for(const k of ['log','warn','error','info','debug'])console[k]=()=>{};\n${workerBundle.outputFiles[0].text}`;
+const worker = `for(const k of ['log','warn','error','info','debug'])console[k]=()=>{};\n${await bundlePdfWorker()}`;
 const result = await build({entryPoints:[at('src/reader.mjs').pathname],outfile:'reader.js',bundle:true,write:false,format:'esm',platform:'browser',target:'es2022',minify:true,legalComments:'external',define:{PDF_WORKER_SOURCE:JSON.stringify(worker),PDF_BINARY_DATA:JSON.stringify(binary)}});
 const js = result.outputFiles.find(f=>f.path.endsWith('.js') || f.path === '<stdout>').text.replace(/<\/script/gi, '<\\/script');
 const css = await readFile(at('src/styles.css'),'utf8');
 const hash = s => `'sha256-${createHash('sha256').update(s).digest('base64')}'`;
-const bootstrap = `const showInitError=()=>{if(document.documentElement.dataset.readerReady==='true')return;const status=document.getElementById('status');if(status){status.textContent='閱讀器初始化失敗；請關閉後重開。文件尚未開啟。';status.dataset.error='true';}};window.addEventListener('error',showInitError);window.addEventListener('unhandledrejection',showInitError);window.addEventListener('securitypolicyviolation',event=>{if(event.violatedDirective.startsWith('script-src'))showInitError();});`;
+const bootstrap = `const showInitError=()=>{if(document.documentElement.dataset.readerReady==='true')return;const status=document.getElementById('status');if(status){status.textContent='The reader could not start. Close and reopen it. No document has been opened.';status.dataset.error='true';}};window.addEventListener('error',showInitError);window.addEventListener('unhandledrejection',showInitError);window.addEventListener('securitypolicyviolation',event=>{if(event.violatedDirective.startsWith('script-src'))showInitError();});`;
 const csp = `default-src 'none'; script-src ${hash(js)} ${hash(bootstrap)}; worker-src blob:; style-src 'unsafe-inline'; img-src data: blob:; font-src data: blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'`;
 let html = (await readFile(at('src/reader.html'),'utf8')).replace('<!--CSP-->',`<meta http-equiv="Content-Security-Policy" content="${csp}">`).replaceAll('<!--ICON-URI-->',ICON_DATA_URI).replace('/*STYLE*/',css).replace('/*BOOTSTRAP*/',()=>bootstrap).replace('/*SCRIPT*/',()=>js);
 await writeFile(at('dist/reader.html'),html);
@@ -33,6 +32,10 @@ for (const [source, name] of [
   ['pdfjs-dist/cmaps/LICENSE','CMAPS-LICENSE'],
   ['pdfjs-dist/standard_fonts/LICENSE_FOXIT','FONT-LICENSE-FOXIT'],
   ['pdfjs-dist/standard_fonts/LICENSE_LIBERATION','FONT-LICENSE-LIBERATION'],
+  ['pdfjs-dist/wasm/LICENSE_PDFJS_JBIG2','PDFJS-JBIG2-LICENSE'],
+  ['pdfjs-dist/wasm/LICENSE_JBIG2','JBIG2-LICENSE'],
+  ['pdfjs-dist/wasm/LICENSE_PDFJS_OPENJPEG','PDFJS-OPENJPEG-LICENSE'],
+  ['pdfjs-dist/wasm/LICENSE_OPENJPEG','OPENJPEG-LICENSE'],
   ['@modelcontextprotocol/ext-apps/LICENSE','MCP-APPS-LICENSE'],
   ['@modelcontextprotocol/core/LICENSE','MCP-CORE-LICENSE'],
   ['@modelcontextprotocol/server/LICENSE','MCP-SERVER-LICENSE'],

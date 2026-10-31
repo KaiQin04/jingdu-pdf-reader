@@ -13,7 +13,7 @@ export function createReaderServer(html) {
     inputSchema:z.object({}).strict(),
     annotations:{readOnlyHint:true,destructiveHint:false,idempotentHint:true,openWorldHint:false},
     _meta:{ui:{resourceUri:RESOURCE},'openai/outputTemplate':RESOURCE,'openai/ui':{entrypoints:[{type:'global'},{type:'thread'}]}},
-  },async()=>({content:[{type:'text',text:'閱讀器已就緒。原始 PDF 只在閱讀視窗處理；若妳主動按「交由 ChatGPT 下載」，才會將預覽中的註記或區域截圖交給宿主，不傳原始 PDF。'}]}));
+  },async()=>({content:[{type:'text',text:'Reader ready. Choose a PDF in the reading window. The original PDF stays in your browser; an explicit download sends only the previewed notes or capture to the host.'}]}));
   registerAppResource(server,'private-pdf-reader',RESOURCE,{mimeType:RESOURCE_MIME_TYPE,icons:ICONS},async()=>({contents:[{
     uri:RESOURCE,mimeType:RESOURCE_MIME_TYPE,text:html,
     _meta:{

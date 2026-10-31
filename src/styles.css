@@ -29,3 +29,6 @@ select{font:inherit;max-width:100%;padding:6px;border:1px solid var(--reader-bor
 
 /* Scroll anchoring is managed by PDF page/fraction, not browser DOM heuristics. */
 #viewport,#pages,.sheet-frame{overflow-anchor:none}
+
+.toolbar #language{font-size:12px;padding:4px;max-width:106px}
+#language:focus-visible{outline:3px solid #8ac3a5;outline-offset:2px}

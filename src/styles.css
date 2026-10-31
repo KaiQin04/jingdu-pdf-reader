@@ -32,3 +32,7 @@ select{font:inherit;max-width:100%;padding:6px;border:1px solid var(--reader-bor
 
 .toolbar #language{font-size:12px;padding:4px;max-width:106px}
 #language:focus-visible{outline:3px solid #8ac3a5;outline-offset:2px}
+#auto-share-banner{flex:0 0 auto;padding:6px 10px;background:var(--reader-status);border-bottom:1px solid var(--reader-border);font-size:12px;line-height:1.45}
+.auto-share-row{display:flex;align-items:center;flex-wrap:wrap;gap:4px 16px}.auto-share-row label{display:flex;align-items:center;gap:6px;font-weight:650}
+#chat-auto{width:16px;height:16px;padding:0;margin:0;accent-color:var(--reader-accent)}
+#chat-auto-disclosure{margin:4px 0 0;color:var(--reader-muted)}#chat-auto-status{font-weight:500}

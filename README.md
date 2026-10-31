@@ -2,14 +2,17 @@
 
 English | [繁體中文](README.zh-Hant.md)
 
-Jingdu is a PDF reader that sits next to your ChatGPT conversation. Open a PDF from your device, preview the text you want to share, then send it to the conversation in a supported host. You can read the original while you ask ChatGPT to explain, compare, or summarize the shared text. The app is currently in a trial phase. Its interface defaults to English; choose 繁體中文 from the Language control in the toolbar to switch. The language choice stays only in the current window.
+Jingdu is a PDF reader that sits next to your ChatGPT conversation. In a supported host, opening a PDF automatically shares its extracted text with ChatGPT, so you can read the original while you ask questions. To read locally without sharing, turn **Auto-share** off before opening the file. The app is currently in a trial phase. Its interface defaults to English; choose 繁體中文 from the Language control in the toolbar to switch. The language choice stays only in the current window.
 
 ## How to use
 
-1. In a ChatGPT conversation where Jingdu is connected, open 「PDF 閱讀器」 (PDF Reader) and choose a PDF from your device.
-2. Click **ChatGPT** in the reader toolbar. Choose **Selected text**, **Current PDF page**, or **Whole document text**, then click **Prepare preview**.
-3. Check the preview and click **Send to ChatGPT**. If sending isn't available, select the preview text, copy with Ctrl+C (⌘+C on Mac), and paste it into your conversation.
-4. Ask your question in the conversation. Opening a PDF or preparing a preview does not give ChatGPT its contents.
+1. Open 「PDF 閱讀器」 (PDF Reader) in a ChatGPT conversation where Jingdu is connected. Check **Auto-share text when I open a PDF** before selecting a file. It is on by default; turn it off for local reading.
+2. Open a PDF from your device.
+3. Wait for **ChatGPT accepted the text**, then ask your question in the conversation. You do not need to prepare a preview or press Send.
+
+Only PDFs opened while auto-sharing is on are shared automatically. Turning it back on applies only to the next PDF you open; it never sends a file opened for local reading. Automatic sharing makes one attempt per file opening and does not retry after failure, rejection, cancellation or uncertain delivery. Turning it off during extraction stops preparation; a message that has started sending cannot be recalled. The setting resets to on in a new reader window.
+
+For a page or selected text, or if an automatic attempt fails, click **ChatGPT** in the toolbar to preview and send manually. If sending is unavailable, copy the preview with Ctrl+C (⌘+C on Mac) and paste it into your conversation. The standalone website cannot send to ChatGPT.
 
 This shares extracted text with the filename and physical PDF page numbers, which may differ from printed page numbers. The original PDF, images, diagrams, and local notes are not attached. Pages without extractable text are marked in the preview. Large documents may need to be shared a page or passage at a time; see the [development notes](docs/development.md#pdf-text-sharing) for limits.
 
@@ -31,7 +34,9 @@ Annotations stay only in the current window. They are not saved automatically an
 
 ## Privacy
 
-Your original PDF is processed in your browser and is not uploaded to this service. **Send to ChatGPT** shares everything in the text preview with the host, under its policies. **Download via ChatGPT** (「交由 ChatGPT 下載」 in Traditional Chinese) separately shares previewed notes or captures. These may include filenames or quoted text. Reading and preparing previews do not send content. Closing the reader does not retract content already shared. On the standalone site, sending and host download are disabled; you can copy text or save an image yourself.
+Your original PDF is processed in your browser and is not uploaded to this service. In supported ChatGPT hosts, automatic sharing is on by default: opening a PDF sends extracted text, the filename, PDF page numbers and a short standard note to the host, under its policies. Turn it off before opening to read locally. Original PDFs, images, diagrams and local annotations are not included in automatic sharing.
+
+**Send to ChatGPT** manually shares the preview. **Download via ChatGPT** (「交由 ChatGPT 下載」 in Traditional Chinese) separately shares previewed notes or captures, which may include filenames or quoted text. Closing the reader or turning sharing off does not retract content already sent. On the standalone site, sending and host download are disabled; you can copy text or save an image yourself.
 
 The site is hosted on Cloudflare, which may keep standard access logs and set security cookies. During the trial, we recommend using non-sensitive documents.
 

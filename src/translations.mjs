@@ -1,8 +1,24 @@
 /** Owned interface copy only; never used to translate document content. */
 export const MESSAGES = Object.freeze({
+  autoLabel: { en: 'Auto-share text when I open a PDF', 'zh-Hant': '開啟 PDF 時自動分享文字' },
+  autoDisclosure: { en: "Opening a PDF shares its extracted text, filename and PDF page numbers with ChatGPT in supported hosts. Turn off first for local reading. Original files, images, diagrams and local notes aren't sent. Resets to on in new windows.", 'zh-Hant': '在支援的 ChatGPT 中，開檔即分享擷取的全文文字、檔名與 PDF 頁碼。只想本機閱讀請先關閉。原檔、圖片、圖表與本機註記不會傳送；新視窗會恢復開啟。' },
+  autoOff: { en: "Auto-sharing is off. You can still preview and send text manually. Turning it off doesn't remove anything already shared.", 'zh-Hant': '自動分享已關閉，仍可手動預覽並傳送文字。關閉後，已分享的內容不會撤回。' },
+  autoOffStatus: { en: 'Automatic sharing is off.', 'zh-Hant': '自動分享已關閉。' },
+  autoUnavailable: { en: "This window can't send to ChatGPT. You can read here and copy text yourself.", 'zh-Hant': '此視窗無法傳送至 ChatGPT。可在此閱讀，並自行複製文字。' },
+  autoWaiting: { en: 'Auto-sharing is on. Opening a PDF will share its text with ChatGPT.', 'zh-Hant': '自動分享已開啟。開啟 PDF 後，會將文字交給 ChatGPT。' },
+  autoNextFile: { en: 'Auto-sharing is on for the next PDF you open. To share this file, preview and send it from the ChatGPT panel.', 'zh-Hant': '自動分享已開啟，將從下一次開檔生效。目前這份請在 ChatGPT 面板預覽並手動傳送。' },
+  autoStarting: { en: 'Preparing document text. Turn off auto-sharing to stop.', 'zh-Hant': '正在準備全文文字，關閉自動分享可停止。' },
+  autoPreparing: { en: 'Reading text: PDF page {page} of {pages}. Turn off auto-sharing to stop.', 'zh-Hant': '正在擷取文字：PDF 第 {page}／{pages} 頁。關閉自動分享可停止。' },
+  autoSending: { en: 'Sending text to ChatGPT…', 'zh-Hant': '正在將文字傳給 ChatGPT…' },
+  autoAccepted: { en: 'ChatGPT accepted the text. Ask your question in the conversation.', 'zh-Hant': 'ChatGPT 已接受文字，請在對話中提問。' },
+  autoStopped: { en: 'Automatic preparation stopped. To share, use the ChatGPT panel.', 'zh-Hant': '已停止自動擷取。如需分享，請使用 ChatGPT 面板。' },
+  autoUnconfirmed: { en: "We couldn't confirm delivery. The text may have been sent, so check the conversation before sharing again. It won't be resent automatically.", 'zh-Hant': '無法確認是否送達，文字可能已傳送。再次分享前請先查看對話；系統不會自動重送。' },
+  autoFailed: { en: "Auto-sharing couldn't finish, and no text was sent. In the ChatGPT panel, try sharing the current page or selected text.", 'zh-Hant': '自動分享未能完成，未傳送任何文字。請在 ChatGPT 面板改分享目前頁面或選取的文字。' },
+  autoRejected: { en: "ChatGPT didn't accept the message. In the ChatGPT panel, try sharing less text.", 'zh-Hant': 'ChatGPT 未接受此訊息。請在 ChatGPT 面板改分享較少的文字。' },
+  autoTried: { en: 'Automatic sharing was already attempted for this PDF. Check the conversation or share manually in the ChatGPT panel.', 'zh-Hant': '這份 PDF 已嘗試自動分享。請先查看對話，或在 ChatGPT 面板手動分享。' },
   chatTab: { en: 'ChatGPT', 'zh-Hant': 'ChatGPT' },
   chatHeading: { en: 'Share PDF text', 'zh-Hant': '分享 PDF 文字' },
-  chatInstructions: { en: 'Choose what to share, preview it, then send or copy it.', 'zh-Hant': '選擇範圍，檢查預覽，再傳送或複製。' },
+  chatInstructions: { en: 'For one page or selected text, or after an automatic attempt fails, preview and send here.', 'zh-Hant': '若要分享單一頁面或選取文字，或自動分享未完成，可在這裡預覽並傳送。' },
   chatScope: { en: 'Scope', 'zh-Hant': '分享範圍' },
   chatSelection: { en: 'Selected text', 'zh-Hant': '選取的文字' },
   chatPage: { en: 'Current PDF page', 'zh-Hant': '目前 PDF 頁面' },
@@ -12,7 +28,7 @@ export const MESSAGES = Object.freeze({
   chatPreview: { en: 'Text to share (read-only)', 'zh-Hant': '將傳送的文字（唯讀）' },
   chatSend: { en: 'Send to ChatGPT', 'zh-Hant': '傳給 ChatGPT' },
   chatCopy: { en: 'Select preview text', 'zh-Hant': '選取預覽文字' },
-  chatDisclosure: { en: 'Sending shares everything in this preview with ChatGPT under its policies. The original PDF, images, diagrams and local notes are not attached. Reading and preparing a preview do not send content.', 'zh-Hant': '按下傳送後，預覽中的全部內容會交給 ChatGPT，依其政策處理。不會附上原始 PDF、圖片、圖表或本機註記。閱讀與產生預覽時不會傳送內容。' },
+  chatDisclosure: { en: "Send to ChatGPT shares this preview under the host's policies. Automatic sharing follows the setting above. The original PDF, images, diagrams and local notes are not attached.", 'zh-Hant': '「傳給 ChatGPT」會分享這份預覽，依宿主政策處理。自動分享依上方設定運作。原始 PDF、圖片、圖表與本機註記不會附上。' },
   chatUnavailable: { en: "Sending isn't available here. Copy the preview and paste it into your chat.", 'zh-Hant': '此環境不支援傳送文字。請複製預覽，自行貼進對話。' },
   chatLimits: { en: 'Text only; no OCR or images. Previews are limited to 200 pages and about 100,000 characters, and ChatGPT may accept less. Share larger documents a page or passage at a time.', 'zh-Hant': '只擷取文字，不含 OCR 或圖片。預覽上限為 200 頁、約 100,000 字元，ChatGPT 實際接受的上限可能更低。較大的文件請分次傳送目前頁或選取的文字。' },
   chatIdle: { en: 'Prepare a new preview to share text.', 'zh-Hant': '請先產生要分享的文字預覽。' },
@@ -163,8 +179,8 @@ export const MESSAGES = Object.freeze({
     "zh-Hant": "選取引用文字"
   },
   "ui.quote.copyHint": {
-    "en": "Copy with Ctrl / ⌘ + C, then paste it into the chat yourself. Nothing is sent automatically.",
-    "zh-Hant": "使用 Ctrl / ⌘ + C 複製，再自行貼入聊天。這裡不會自動傳送。"
+    "en": "Copy with Ctrl / ⌘ + C, then paste it into the chat yourself.",
+    "zh-Hant": "使用 Ctrl / ⌘ + C 複製，再自行貼入聊天。"
   },
   "ui.notes.heading": {
     "en": "Local notes",
@@ -263,16 +279,16 @@ export const MESSAGES = Object.freeze({
     "zh-Hant": "交由 ChatGPT 下載"
   },
   "ui.export.hostDownloadDisclosure": {
-    "en": "Normal reading stays in your browser. Only when you press \"Download via ChatGPT\" are the selected notes or captures (which may include the file name, document fingerprint, quotes, and timestamps) passed to the ChatGPT host. The reader does not send the original PDF. If the host doesn't support this, copy the text or save the preview image.",
-    "zh-Hant": "一般閱讀只在瀏覽器。只有按下「交由 ChatGPT 下載」時，所選註記或截圖（可能包含原檔名、文件指紋、引文與時間）才交給 ChatGPT 宿主；不傳原始 PDF。宿主不支援時，請複製文字或另存預覽圖。"
+    "en": "Download via ChatGPT shares only the previewed notes or captures, which may include the filename, document fingerprint, quotes and timestamps. It does not attach the original PDF. Automatic PDF text sharing is controlled separately above. If download isn't supported, copy the text or save the preview image.",
+    "zh-Hant": "「交由 ChatGPT 下載」只分享預覽的註記或截圖，可能包含檔名、文件指紋、引文與時間，不會附上原始 PDF。PDF 文字的自動分享由上方設定另外控制。若不支援下載，可自行複製文字或另存預覽圖。"
   },
   "ui.privacy.heading": {
     "en": "Privacy",
     "zh-Hant": "隱私說明"
   },
   "ui.privacy.body": {
-    "en": "Your PDF is parsed in your browser and is not uploaded to this service. Send to ChatGPT shares previewed PDF text; Download via ChatGPT shares previewed notes or captures. These may include filenames or quotes and are handled under the host's policies. Nothing is sent automatically. Export notes before closing. The hosting platform may keep standard access logs and security cookies.",
-    "zh-Hant": "PDF 在瀏覽器解析，不會傳到本服務。「傳給 ChatGPT」會分享預覽的 PDF 文字；「交由 ChatGPT 下載」會分享預覽的註記或截圖，可能包含檔名或引文，依宿主政策處理。不會自動傳送。註記請在關閉前匯出。託管平台可能有一般存取紀錄和安全 Cookie。"
+    "en": "The original PDF is parsed in your browser and isn't uploaded to this service. In supported ChatGPT hosts, automatic text sharing is on by default: opening a PDF shares its extracted text, filename and page numbers under the host's policies. Turn it off before opening for local reading. Notes and captures are shared separately only by Download via ChatGPT. Turning sharing off doesn't retract delivered content. Export notes before closing. Cloudflare may keep access logs and security cookies.",
+    "zh-Hant": "原始 PDF 在瀏覽器解析，不會上傳本服務。支援的 ChatGPT 環境預設自動分享文字，開檔後會把擷取文字、檔名與頁碼交給宿主，依其政策處理。只想本機閱讀請在開檔前先關閉。註記與截圖另由「交由 ChatGPT 下載」主動分享。關閉分享不會撤回已送達的內容。註記請在關閉前匯出。Cloudflare 可能有存取紀錄與安全 Cookie。"
   },
   "ui.view.heading": {
     "en": "Reading layout",
@@ -327,8 +343,8 @@ export const MESSAGES = Object.freeze({
     "zh-Hant": "開啟 PDF 即可閱讀"
   },
   "ui.empty.limits": {
-    "en": "Processed only in your browser · up to 500 MiB / 5,000 pages; large files need enough device memory",
-    "zh-Hant": "文件只在瀏覽器處理 · 500 MiB／5,000 頁以內；大檔需足夠裝置記憶體"
+    "en": "Check auto-sharing above before opening · up to 500 MiB / 5,000 pages; large files need enough device memory",
+    "zh-Hant": "開檔前請確認上方自動分享設定 · 500 MiB／5,000 頁以內；大檔需足夠裝置記憶體"
   },
   "ui.dialog.unsavedNotesBody": {
     "en": "You have local notes. Export them first, or discard them to continue.",
@@ -355,8 +371,8 @@ export const MESSAGES = Object.freeze({
     "zh-Hant": "閱讀控制"
   },
   "ui.aria.openPdf": {
-    "en": "Open PDF. Processed only in your browser, up to 500 MiB / 5,000 pages; large files need enough device memory",
-    "zh-Hant": "開啟 PDF；只在瀏覽器處理，500 MiB／5,000 頁以內；大檔需足夠裝置記憶體"
+    "en": "Open PDF, up to 500 MiB / 5,000 pages. Check auto-sharing before opening; large files need enough device memory.",
+    "zh-Hant": "開啟 PDF，500 MiB／5,000 頁以內。開檔前請確認自動分享設定；大檔需足夠裝置記憶體。"
   },
   "ui.aria.backToPreviousPosition": {
     "en": "Back to previous reading position",

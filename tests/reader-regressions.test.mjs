@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import { createI18n } from '../src/i18n.mjs';
-import { canSharePdfText } from '../src/chat-context.mjs';
+import { canSharePdfText, AutomaticPdfTextShare } from '../src/chat-context.mjs';
 const source=readFileSync(new URL('../src/reader.mjs',import.meta.url),'utf8');
 // Execute the actual named function source with bounded DOM doubles, not a copy
 // of its logic. Browser layout/host integration remain separate UI tests.
 function fn(name,next,globals={}){
  const found=source.indexOf(`function ${name}(`),start=source.slice(found-6,found)==='async '?found-6:found,end=source.indexOf(next,start);
  assert.ok(start>=0&&end>start,`source boundary for ${name}`);
- return vm.runInNewContext(`(${source.slice(start,end).trim()})`,{i18n:createI18n('zh-Hant'),...globals});
+ return vm.runInNewContext(`(${source.slice(start,end).trim()})`,{i18n:createI18n('zh-Hant'),automaticShare:new AutomaticPdfTextShare(),...globals});
 }
 function node(){return {value:'',hidden:false,disabled:false,style:{},children:[],attributes:{},classList:{add(){}},append(...v){this.children.push(...v)},replaceChildren(){this.children=[]},setAttribute(k,v){this.attributes[k]=v},removeAttribute(k){delete this.attributes[k];delete this[k]},addEventListener(){},focus(){},remove(){this.removed=true}};}
 const nodes=()=>{const values=new Map();return id=>{if(!values.has(id))values.set(id,node());return values.get(id)}};
@@ -80,7 +80,7 @@ test('standalone text preview remains copyable while host sending is disabled',(
 
 test('double clicking send cannot duplicate a message and a late result cannot mark a new preview sent',async()=>{
  const $=nodes(),state={chatSequence:1,chatPreview:{text:'synthetic first'},chatSending:false};let sends=0,release;
- const send=fn('sendChatPreview',"\n$('chat-toggle')",{state,$,app:{},canSharePdfText:()=>true,updateChatControls(){},sendPdfText(){sends++;return new Promise(r=>{release=r})}});
+ const send=fn('sendChatPreview','function maybeAutoShare',{state,$,app:{},canSharePdfText:()=>true,updateChatControls(){},sendPdfText(){sends++;return new Promise(r=>{release=r})}});
  const first=send();await send();assert.equal(sends,1);
  state.chatSequence++;state.chatSending=false;state.chatSent=false;const next={text:'synthetic next'};state.chatPreview=next;
  release();await first;assert.equal(state.chatPreview,next);assert.equal(state.chatSent,false);assert.equal(state.chatSending,false);
@@ -92,4 +92,14 @@ test('unchanged PDF selection events do not cancel a preview while controls upda
  const capture=fn('captureSelection',"document.addEventListener('selectionchange'",{state,window:{getSelection:()=>selection},LIMITS:{quoteChars:4000},resetChatPreview(){resets++}});
  capture();assert.equal(resets,1);capture();assert.equal(resets,1);
  selected='Another passage';capture();assert.equal(resets,2);assert.equal(state.selection,'Another passage');
+});
+
+test('reader automatic startup respects the local setting and ignores stale document callbacks',()=>{
+ const $=nodes(),doc={numPages:2},state={pdf:doc,epoch:1,chatAutoEnabled:false,chatAutoEligible:true,name:'synthetic.pdf'};let start;
+ const run=fn('maybeAutoShare',"$('chat-auto').addEventListener",{state,$,app:{},canSharePdfText:()=>true,automaticShare:{start(value){start=value;return Promise.resolve()}},updateChatControls(){}});
+ run();assert.equal(start,undefined);state.chatAutoEnabled=true;state.chatAutoEligible=false;run();assert.equal(start,undefined);
+ state.chatAutoEligible=true;state.busy=true;run();assert.equal(start,undefined);
+ state.busy=false;run();assert.equal(start.document,doc);assert.equal(start.pageCount,2);
+ state.pdf={numPages:1};state.epoch++;start.onState({phase:'accepted',preview:{}});
+ assert.equal(state.chatSent,undefined);assert.equal($('chat-auto-status').textContent,undefined);
 });

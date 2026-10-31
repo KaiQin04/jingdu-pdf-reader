@@ -77,3 +77,60 @@ export async function sendPdfText(app, preview) {
   const result = await app.sendMessage({ role: 'user', content: [{ type: 'text', text: preview.text }] }, { timeout: 15_000 });
   if (result?.isError) throw error('HOST_REJECTED');
 }
+
+/** One automatic attempt per PDF object; no durable identifiers or retries. */
+export class AutomaticPdfTextShare {
+  #attempted = new WeakSet();
+  #run = null;
+
+  get running() { return this.#run !== null; }
+
+  hasAttempted(document) {
+    return !!document && this.#attempted.has(document);
+  }
+
+  /** Stop extraction. A message already handed to the host cannot be recalled. */
+  cancel() {
+    const run = this.#run;
+    if (!run) return false;
+    this.#run = null;
+    run.controller.abort();
+    return run.sending;
+  }
+
+  async start({ document, enabled, app, filename, pageCount, readPage, onState = () => {} }) {
+    if (!enabled || !document || typeof document !== 'object' || !canSharePdfText(app) || this.running || this.hasAttempted(document)) return false;
+    this.#attempted.add(document);
+    const run = { controller: new AbortController(), sending: false };
+    this.#run = run;
+    const active = () => this.#run === run && !run.controller.signal.aborted;
+    const emit = value => { if (active()) onState(value); };
+    let preview;
+    try {
+      emit({ phase: 'preparing' });
+      preview = await preparePdfText({ scope: 'document', filename, pageCount, readPage, signal: run.controller.signal, onProgress: values => emit({ phase: 'preparing', ...values }) });
+      if (!active()) return false;
+      emit({ phase: 'prepared', preview });
+      if (!active()) return false;
+      run.sending = true;
+      emit({ phase: 'sending' });
+      if (!active()) return false;
+      await sendPdfText(app, preview);
+      if (!active()) return false;
+      emit({ phase: 'accepted', preview });
+      return true;
+    } catch (reason) {
+      if (active()) {
+        const code = reason?.code;
+        const phase = !run.sending || code === 'UNAVAILABLE' ? 'failed' : code === 'HOST_REJECTED' ? 'rejected' : 'unconfirmed';
+        emit({ phase, code, preview });
+      }
+      return false;
+    } finally {
+      if (this.#run === run) {
+        this.#run = null;
+        onState({ phase: 'settled' });
+      }
+    }
+  }
+}

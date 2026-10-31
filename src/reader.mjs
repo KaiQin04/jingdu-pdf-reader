@@ -7,10 +7,11 @@ import { ContinuousLayout, visibleWindow } from './continuous-layout.mjs';
 import { SEARCH_WORKER_SOURCE } from './search-engine.mjs';
 import { AnnotationStore, ANNOTATION_COLORS, normalizePageRect } from './annotations.mjs';
 import { createI18n } from './i18n.mjs';
-import { preparePdfText, pdfItemsText, canSharePdfText, sendPdfText } from './chat-context.mjs';
+import { preparePdfText, pdfItemsText, canSharePdfText, sendPdfText, AutomaticPdfTextShare } from './chat-context.mjs';
 const i18n = createI18n();
+const automaticShare = new AutomaticPdfTextShare();
 const $ = id => document.getElementById(id);
-const state = { epoch:0, pdf:null, task:null, worker:null, rawWorker:null, workerUrl:null, render:null, textLayer:null, page:null, pageNumber:1, scale:1, busy:false, name:'', cache:new PageTextCache(), range:null, searching:false, searchCancel:false, searchNext:1, searchQuery:'', searchCount:0, selection:'', selectionPage:0, selectionRects:[], selectionTruncated:false, views:new Map(), mode:'continuous', crop:0, other:1, history:[], layout:null, fitWidth:true, scrollVersion:0, programScroll:null, pendingPage:null, notes:null, tab:'search', thumbStart:1, outlineLoaded:false, searchWorker:null, searchWorkerUrl:null, searchRequest:0, exportData:null, pendingAction:null, chatPreview:null, chatAbort:null, chatSequence:0, chatSending:false, chatSent:false };
+const state = { epoch:0, pdf:null, task:null, worker:null, rawWorker:null, workerUrl:null, render:null, textLayer:null, page:null, pageNumber:1, scale:1, busy:false, name:'', cache:new PageTextCache(), range:null, searching:false, searchCancel:false, searchNext:1, searchQuery:'', searchCount:0, selection:'', selectionPage:0, selectionRects:[], selectionTruncated:false, views:new Map(), mode:'continuous', crop:0, other:1, history:[], layout:null, fitWidth:true, scrollVersion:0, programScroll:null, pendingPage:null, notes:null, tab:'search', thumbStart:1, outlineLoaded:false, searchWorker:null, searchWorkerUrl:null, searchRequest:0, exportData:null, pendingAction:null, chatPreview:null, chatAbort:null, chatSequence:0, chatSending:false, chatSent:false, chatAutoEnabled:true, chatAutoEligible:false };
 const ERRORS = { EMPTY:'errorEmpty', SIZE:'errorSize', RANGE:'errorRange', HEADER:'errorHeader', PAGES:'errorPages', PASSWORD:'errorPassword', TEXT:'errorText', TIMEOUT:'errorTimeout', WORKER:'errorWorker', INVALID:'errorInvalid' };
 function status(message, error=false) { if(typeof message==='string'){i18n.clearText($('status'));$('status').textContent=message;}else i18n.text($('status'),message); $('status').dataset.error=String(error); }
 function controls() {
@@ -34,6 +35,8 @@ function controls() {
 }
 function clearQuote(){ state.selection=''; state.selectionPage=0;state.selectionRects=[];state.selectionTruncated=false; resetChatPreview(); $('citation').value=''; $('copy').disabled=true; window.getSelection()?.removeAllRanges(); }
 function closeDocument(message=i18n.message('documentClosed')) {
+  automaticShare.cancel();
+  state.chatAutoEligible=false;
   ++state.epoch;state.searchCancel=true;state.range?.abort();stopSearchWorker();clearViews();clearThumbnails();state.notes=null;state.pendingAction=null;state.thumbStart=1;state.history=[];state.outlineLoaded=false;state.pendingPage=null;state.layout=null;state.programScroll=null;state.exportData=null;$('pages').style.height='';$('pages').style.width='';$('note-list').replaceChildren();i18n.text($('outline'),"ui.nav.outlineEmpty");i18n.clearValue($('export-preview'));$('export-preview').value='';$('region-preview').hidden=true;$('region-preview').removeAttribute('src');$('note-comment').value='';$('host-download').disabled=true;$('discard-dialog').hidden=true;
   setToolsOpen(false,false);
   state.render?.cancel(); state.textLayer?.cancel();
@@ -165,6 +168,7 @@ new ResizeObserver(entries=>{const {width,height}=entries[0]?.contentRect??{};if
 async function openFile(file,approved=false){
   if(!approved&&(state.notes?.size||$('note-comment').value.trim())){requestDiscard(()=>void openFile(file,true));return;}
   closeDocument(i18n.message('openingPdf'));
+  state.chatAutoEligible=state.chatAutoEnabled;
   const epoch=state.epoch; state.busy=true;controls();
   try{
     checkFile(file);
@@ -189,7 +193,7 @@ async function openFile(file,approved=false){
     state.pdf=doc;state.notes=new AnnotationStore({fingerprints:doc.fingerprints,pageCount:doc.numPages,filename:state.name});$('page-number').max=doc.numPages;$('split-page').max=doc.numPages;
     await renderPage(1,Math.max(.25,($('viewport').clientWidth-24)/612),{force:true,fit:true});
   }catch(error){fail(error,epoch);}
-  finally{if(epoch===state.epoch){state.busy=false;controls();}}
+  finally{if(epoch===state.epoch){state.busy=false;controls();maybeAutoShare();}}
 }
 function setToolsOpen(open,restoreFocus=true){
   $('tools-panel').hidden=!open;
@@ -335,16 +339,19 @@ function resetChatPreview(){
   $('chat-preview').value='';i18n.text($('chat-status'),'chatIdle');updateChatControls();
 }
 function updateChatControls(){
-  const extracting=!!state.chatAbort,busy=extracting||state.chatSending,ready=!!state.pdf&&!state.busy;
+  const extracting=!!state.chatAbort,busy=extracting||state.chatSending||automaticShare.running,ready=!!state.pdf&&!state.busy,supported=canSharePdfText(app),enabled=state.chatAutoEnabled!==false;
   $('chat-toggle').disabled=!state.pdf;
   $('chat-scope').disabled=!ready||busy;$('chat-prepare').disabled=!ready||busy;
   $('chat-cancel').hidden=!extracting;
-  $('chat-send').disabled=!state.chatPreview||busy||state.chatSent||!canSharePdfText(app);
+  $('chat-send').disabled=!state.chatPreview||busy||state.chatSent||!supported;
   $('chat-copy').disabled=!state.chatPreview||busy;
-  $('chat-host-hint').hidden=canSharePdfText(app);
+  $('chat-host-hint').hidden=supported;
+  $('chat-auto').checked=enabled;
+  i18n.text($('chat-auto-disclosure'),enabled?'autoDisclosure':'autoOff');
+  if(!automaticShare.running&&!automaticShare.hasAttempted(state.pdf))i18n.text($('chat-auto-status'),!enabled?'autoOffStatus':!supported?'autoUnavailable':state.pdf&&!state.chatAutoEligible?'autoNextFile':'autoWaiting');
 }
 async function prepareChatPreview(){
-  if(!state.pdf||state.busy||state.chatAbort||state.chatSending)return;
+  if(!state.pdf||state.busy||state.chatAbort||state.chatSending||automaticShare.running)return;
   resetChatPreview();
   const sequence=state.chatSequence,doc=state.pdf,controller=new AbortController();state.chatAbort=controller;updateChatControls();
   try{
@@ -361,12 +368,41 @@ async function prepareChatPreview(){
   }finally{if(sequence===state.chatSequence){state.chatAbort=null;updateChatControls();}}
 }
 async function sendChatPreview(){
-  if(!state.chatPreview||state.chatSending||state.chatSent||!canSharePdfText(app))return;
+  if(!state.chatPreview||state.chatSending||state.chatSent||automaticShare.running||!canSharePdfText(app))return;
   const sequence=state.chatSequence,preview=state.chatPreview;state.chatSending=true;updateChatControls();i18n.text($('chat-status'),'chatSending');
   try{await sendPdfText(app,preview);if(sequence===state.chatSequence){state.chatSent=true;i18n.text($('chat-status'),'chatAccepted');}}
   catch(error){if(sequence===state.chatSequence)i18n.text($('chat-status'),error.code==='HOST_REJECTED'?'chatRejected':'chatUnconfirmed');}
   finally{if(sequence===state.chatSequence){state.chatSending=false;updateChatControls();}}
 }
+function maybeAutoShare(){
+  const doc=state.pdf,epoch=state.epoch;
+  if(!doc||state.busy||state.chatAbort||state.chatSending||!state.chatAutoEnabled||!state.chatAutoEligible||!canSharePdfText(app))return;
+  void automaticShare.start({document:doc,enabled:state.chatAutoEnabled,app,filename:state.name,pageCount:doc.numPages,
+    readPage:async number=>{const page=await doc.getPage(number);return pdfItemsText((await page.getTextContent()).items);},
+    onState:event=>{
+      if(doc!==state.pdf||epoch!==state.epoch)return;
+      if(event.phase==='preparing')i18n.text($('chat-auto-status'),event.page?'autoPreparing':'autoStarting',event);
+      else if(event.phase==='prepared'){
+        state.chatPreview=event.preview;state.chatSent=false;$('chat-scope').value='document';$('chat-preview').value=event.preview.text;
+        i18n.text($('chat-status'),'chatReady',{pages:event.preview.pages.length,chars:event.preview.text.length,empty:event.preview.emptyPages.length});
+      }else if(event.phase==='sending')i18n.text($('chat-auto-status'),'autoSending');
+      else if(event.phase==='accepted'){
+        if(state.chatPreview===event.preview){state.chatSent=true;i18n.text($('chat-status'),'chatAccepted');}
+        i18n.text($('chat-auto-status'),'autoAccepted');
+      }else if(event.phase==='failed'){
+        const keys={NO_TEXT:'chatNoText',TOO_LARGE:'chatTooLarge',TIMEOUT:'chatTimeout',UNAVAILABLE:'autoUnavailable'};
+        i18n.text($('chat-auto-status'),keys[event.code]||'autoFailed');
+      }else if(event.phase==='rejected')i18n.text($('chat-auto-status'),'autoRejected');
+      else if(event.phase==='unconfirmed')i18n.text($('chat-auto-status'),'autoUnconfirmed');
+      updateChatControls();
+    }});
+}
+$('chat-auto').addEventListener('change',()=>{
+  state.chatAutoEnabled=$('chat-auto').checked;
+  if(!state.chatAutoEnabled){state.chatAutoEligible=false;const mayHaveSent=automaticShare.cancel();if(mayHaveSent&&state.chatPreview)state.chatSent=true;i18n.text($('chat-auto-status'),mayHaveSent?'autoUnconfirmed':'autoStopped');}
+  else if(automaticShare.hasAttempted(state.pdf))i18n.text($('chat-auto-status'),'autoTried');
+  updateChatControls();if(state.chatAutoEnabled)maybeAutoShare();
+});
 $('chat-toggle').addEventListener('click',()=>{setTab('chat');setToolsOpen(true);});
 $('chat-scope').addEventListener('change',resetChatPreview);
 $('chat-prepare').addEventListener('click',()=>void prepareChatPreview());
@@ -383,13 +419,14 @@ $('discard-confirm').addEventListener('click',()=>{const action=state.pendingAct
 $('discard-export').addEventListener('click',()=>{$('discard-dialog').hidden=true;state.pendingAction=null;setTab('notes');setToolsOpen(true);exportNotes('json');});
 
 window.addEventListener('pagehide',()=>closeDocument(''));
-// Normal reading stays local. Previewed text or exports are shared only by their explicit buttons.
+// Auto-sharing follows the visible session setting; raw PDFs and local notes stay out.
 let app=null;
 function updateHost(context){
   if(context?.theme==='light'||context?.theme==='dark')applyDocumentTheme(context.theme);
   for(const mode of ['inline','fullscreen'])$(mode).hidden=!context?.availableDisplayModes?.includes(mode)||context.displayMode===mode;
   updateExportButton();
   updateChatControls();
+  maybeAutoShare();
   i18n.clearText($('host-status'));$('host-status').textContent=`MCP App · ${context?.displayMode??'inline'}`;
 }
 if(window.parent!==window && !document.documentElement.hasAttribute('data-local')){
@@ -404,6 +441,7 @@ for(const mode of ['inline','fullscreen'])$(mode).addEventListener('click',async
 });
 
 i18n.apply(document);
+updateChatControls();
 $('language').addEventListener('change',()=>{$('language').value=i18n.setLanguage($('language').value,document);});
 
 // Non-sensitive readiness marker distinguishes UI loading from file selection.

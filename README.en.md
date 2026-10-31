@@ -2,15 +2,16 @@
 
 [繁體中文](README.md) | English
 
-[Open the reader](https://jingdu-pdf-reader.qqqqqwz.chatgpt.site)
-
-Read your own PDFs in the browser. Scroll continuously, search, browse the table of contents, and switch between single-page, two-page, or side-by-side comparison views. Select text to copy it with a page-number citation. You can also highlight, underline, comment, draw by hand, or capture an area of a page. The app is currently in a trial phase, and its interface is in Traditional Chinese.
+Jingdu is a PDF reader that sits next to your ChatGPT conversation. In a ChatGPT setup where Jingdu is connected, open the reader window and choose a PDF from your device. You can then read the original while you talk it through with ChatGPT. Paste any passage into the chat with its page number, and ask ChatGPT to explain, compare, or summarize it. The app is currently in a trial phase, and its interface is in Traditional Chinese.
 
 ## How to use
 
-1. Open the reader and choose a PDF from your computer.
-2. Read, search, and add any annotations you need.
-3. In the export preview, copy your notes as JSON or Markdown. Depending on browser support, you can also save area captures as preview images. To continue annotating later, reopen the same PDF and then import the JSON.
+1. In a ChatGPT conversation where Jingdu is connected, open 「PDF 閱讀器」 (PDF Reader) and choose a PDF from your device.
+2. Select the text you want to discuss, open 「工具 → 搜尋」 (Tools → Search), click 「建立頁碼引用」 (Create page citation), then click 「選取引用文字」 (Select citation text).
+3. Press Ctrl+C (⌘+C on Mac) and paste it into your ChatGPT conversation.
+4. Ask your question. For example, have ChatGPT explain the passage, compare it with another passage you paste into the chat, or turn it into key points.
+
+To find passages or check the original, use search, the table of contents, or the two-page and side-by-side views in the reader window. You can also highlight, underline, comment, draw by hand, or capture an area of a page. In the export preview, copy your notes as JSON or Markdown. To continue later, reopen the same PDF and import the JSON.
 
 ## Save before you leave
 
@@ -30,6 +31,7 @@ The site is hosted on Cloudflare, which may keep standard access logs and set se
 
 ## More
 
-- [Development and technical notes (Traditional Chinese)](docs/development.md)
+- [Try the standalone web reader](https://jingdu-pdf-reader.qqqqqwz.chatgpt.site)
+- [ChatGPT connection and development notes (Traditional Chinese)](docs/development.md)
 - [License](LICENSE)
 - [Third-party licenses (Traditional Chinese)](docs/third-party-licenses.md)
